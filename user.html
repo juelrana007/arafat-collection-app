@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Arafat Collection - Mobile App</title>
+    <!-- Icon Library (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* --- General Styles & Variables --- */
+        :root {
+            --primary-color: #008000; /* Green */
+            --dark-color: #222;
+            --light-color: #fff;
+            --grey-color: #f4f4f4;
+            --text-color: #333;
+            --border-color: #eee;
+            --box-bg-color: #fff;
+            --header-height: 55px;
+            --footer-nav-height: 60px;
+        }
+
+        /* --- START: Dark Mode Theme --- */
+        body.dark-mode {
+            --dark-color: #f0f0f0;
+            --light-color: #1a1a1a;
+            --grey-color: #2a2a2a;
+            --text-color: #f0f0f0;
+            --border-color: #333;
+            --box-bg-color: #222;
+        }
+        /* --- END: Dark Mode Theme --- */
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: var(--light-color); color: var(--text-color); -webkit-tap-highlight-color: transparent; transition: background-color 0.3s ease, color 0.3s ease; }
+        .container { padding: 15px; }
+        img { max-width: 100%; height: auto; }
+
+        /* --- START: Splash Screen Styles --- */
+        .splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--light-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s ease-in-out, visibility 0.8s; visibility: visible; opacity: 1; }
+        .splash-screen.hidden { opacity: 0; visibility: hidden; }
+        .splash-screen img { max-width: 150px; animation: pulse 1.5s infinite ease-in-out; }
+        .splash-screen h1 { font-size: 24px; margin-top: 15px; color: var(--text-color); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        /* --- END: Splash Screen Styles --- */
+
+        /* --- Main App Wrapper --- */
+        .app-wrapper { max-width: 450px; margin: 0 auto; position: relative; background: var(--light-color); min-height: 100vh; padding-top: var(--header-height); padding-bottom: var(--footer-nav-height); overflow-x: hidden; transition: background-color 0.3s ease; }
+
+        /* --- Header --- */
+        .app-header { position: fixed; top: 0; left: 0; right: 0; max-width: 450px; margin: 0 auto; height: var(--header-height); background-color: var(--box-bg-color); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid var(--border-color); z-index: 1000; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .header-btn { background: none; border: none; font-size: 24px; cursor: pointer; width: 40px; text-align: center; color: var(--text-color); }
+        .app-header .logo-container { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .app-header .logo-container img { height: 40px; }
+        .app-header .logo-container span { font-size: 16px; font-weight: bold; color: var(--text-color); display: none; } /* Initially hidden */
+        .search-bar { display: none; position: absolute; top: var(--header-height); left:0; right:0; padding: 10px; background: var(--box-bg-color); border-bottom: 1px solid var(--border-color); z-index: 999;}
+        .search-bar input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--light-color); color: var(--text-color); }
+
+        /* --- Footer Navigation --- */
+        .footer-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 450px; margin: 0 auto; height: var(--footer-nav-height); background-color: var(--box-bg-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 1000; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-color); font-size: 12px; text-decoration: none; position: relative; flex: 1; text-align: center; }
+        .nav-item i { font-size: 22px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary-color); }
+        #cart-counter { position: absolute; top: -5px; right: calc(50% - 25px); background-color: red; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+
+        /* --- Page Views --- */
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        /* --- Image Slider Styles --- */
+        .slider-container { width: 100%; overflow: hidden; position: relative; aspect-ratio: 2.2 / 1; }
+        .slider-wrapper { position: relative; width: 100%; height: 100%; }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; z-index: 1; }
+        .slide.active { opacity: 1; z-index: 2; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .slider-nav { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
+        .slider-nav .dot { width: 10px; height: 10px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.7); cursor: pointer; }
+        .slider-nav .dot.active { background-color: var(--primary-color); }
+
+        /* --- Home Page Styles --- */
+        .section-title { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 15px 0; }
+        .section-title h2 { font-size: 18px; }
+        .view-all-btn { background-color: var(--primary-color); color: white; padding: 5px 12px; border-radius: 5px; font-size: 12px; text-decoration: none; cursor: pointer; }
+        #search-results-container { padding: 15px; }
+        #search-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        /* --- Categories Grid Styles --- */
+        .categories-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center; }
+        .category-item-link { text-decoration: none; color: inherit; }
+        .category-item { background-color: var(--grey-color); padding: 10px 5px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .category-item img { height: 40px; width: 40px; margin-bottom: 8px; object-fit: contain; }
+        .category-item span { font-size: 12px; line-height: 1.2; }
+
+        /* --- Horizontal Auto-Scrolling Product Section --- */
+        .horizontal-scroller-container { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .horizontal-scroller-container::-webkit-scrollbar { display: none; }
+        .horizontal-scroller-wrapper { display: flex; gap: 12px; }
+        .horizontal-scroller-item { flex: 0 0 48%; scroll-snap-align: start; }
+
+        /* --- Product Card General Style --- */
+        .product-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--box-bg-color); display: flex; flex-direction: column; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+        .product-info { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+        .product-info h3 { font-size: 14px; font-weight: normal; min-height: 2.4em; overflow: hidden; }
+        .product-price { font-size: 16px; font-weight: bold; color: var(--primary-color); margin: 8px 0; }
+        .order-btn { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: auto; }
+        
+        /* --- Generic Button Style --- */
+        .action-btn { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; } 
+        .qty-btn { background: none; border: none; font-size: 18px; width: 35px; height: 35px; cursor: pointer; color: var(--text-color); }
+
+        /* --- START: Footer Style Changes --- */
+        .app-footer { background-color: var(--grey-color); padding: 20px 15px; transition: background-color 0.3s ease; }
+        .footer-section { background: var(--box-bg-color); border-radius: 8px; margin-bottom: 15px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: background-color 0.3s ease; }
+        .footer-section h4 { font-size: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; transition: border-color 0.3s ease; }
+        .footer-brand { text-align: center; }
+        .footer-brand img { height: 50px; margin-bottom: 10px; }
+        .footer-brand p { font-size: 18px; font-weight: bold; color: var(--text-color); }
+        .footer-links ul { list-style: none; }
+        .footer-links ul li { margin-bottom: 10px; }
+        .footer-links ul li a { color: var(--text-color); text-decoration: none; display: block; transition: color 0.2s; white-space: nowrap; }
+        .footer-links ul li a:hover { color: var(--primary-color); }
+        
+        .links-info-card {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .links-info-card .footer-section {
+            flex: 1; /* Each takes up half the space */
+            margin-bottom: 0; /* Margin is now on the parent */
+        }
+
+        .footer-social-links {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .footer-social-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-basis: calc(50% - 5px); /* Half width minus half the gap */
+        }
+        .footer-social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            gap: 8px;
+            width: 100%;
+        }
+        .footer-social-btn.facebook { background-color: #1877F2; }
+        .footer-social-btn.telegram { background-color: #26A5E4; }
+        .footer-social-btn.whatsapp { background-color: #25D366; }
+        .footer-social-btn.tiktok { background-color: #000000; }
+        .footer-social-btn.youtube { background-color: #FF0000; }
+        .footer-social-btn.instagram { background: #d6249f; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); }
+        .footer-bottom { text-align: center; font-size: 14px; color: #777; padding-top: 15px; }
+        /* --- END: Footer Style Changes --- */
+        
+        /* --- General Sidebar Styles --- */
+        .sidebar { position: fixed; top: 0; left: -100%; width: 80%; max-width: 300px; height: 100%; background-color: var(--light-color); z-index: 2000; transition: left 0.3s ease-in-out, background-color 0.3s ease; box-shadow: 2px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;} 
+        .sidebar.open { left: 0; } 
+        .sidebar-header { padding: 15px; background-color: var(--dark-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; transition: background-color 0.3s ease; } 
+        .sidebar-header .sidebar-title { display: flex; align-items: center; gap: 10px; }
+        .sidebar-header .sidebar-title img { height: 30px; }
+        .sidebar-header .sidebar-title h3 { font-size: 16px; margin: 0; } 
+        .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; } 
+        .backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; } 
+        .backdrop.visible { display: block; }
+        
+        /* --- START: Modernized Sidebar Menu Styles --- */
+        .sidebar-menu { list-style: none; overflow-y: auto; flex-grow: 1; padding: 10px; }
+        .sidebar-menu li { margin-bottom: 4px; }
+        .sidebar-menu li a, .sidebar-menu li .accordion-btn { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-color); text-decoration: none; border-radius: 8px; background: none; width: 100%; text-align: left; font-size: 15px; font-weight: 500; cursor: pointer; border: none; border-left: 4px solid transparent; transition: background-color 0.3s ease, border-left 0.3s ease, color 0.3s ease; }
+        .sidebar-menu li a:hover, .sidebar-menu li .accordion-btn:hover { background-color: var(--grey-color); color: var(--primary-color); }
+        .sidebar-menu li .accordion-btn { justify-content: space-between; }
+        .sidebar-menu li .menu-icon { font-size: 18px; width: 20px; text-align: center; color: #555; }
+        body.dark-mode .sidebar-menu li .menu-icon { color: #bbb; }
+        .accordion-btn i.fa-chevron-down { transition: transform 0.3s ease; font-size: 12px; }
+        .accordion-btn.active i.fa-chevron-down { transform: rotate(180deg); }
+        .accordion-btn.active { background-color: var(--grey-color); color: var(--primary-color); border-left: 4px solid var(--primary-color); }
+        .submenu { list-style: none; background-color: transparent; max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; padding: 0; padding-left: 20px; position: relative; }
+        .submenu.open { max-height: 1200px; padding: 5px 0 5px 25px; }
+        .submenu::before { content: ''; position: absolute; left: 12px; top: 0; bottom: 0; width: 2px; background-color: var(--border-color); transition: background-color 0.3s ease; }
+        .submenu li { position: relative; }
+        .submenu li::before { content: ''; position: absolute; left: -13px; top: 21px; width: 10px; height: 2px; background-color: var(--border-color); transition: background-color 0.3s ease; }
+        .submenu li a, .submenu li .accordion-btn { font-size: 14px; font-weight: normal; padding: 8px 10px; }
+        .submenu .submenu { padding-left: 15px; }
+        .submenu .submenu.open { padding-left: 20px; }
+        .submenu .submenu::before { left: 8px; }
+        .submenu .submenu li::before { left: -12px; top: 19px; }
+        .submenu .submenu li a { font-size: 13px; }
+        /* --- END: Modernized Sidebar Menu Styles --- */
+
+
+        /* --- Cart View Styles --- */
+        .cart-view { position: fixed; top: 0; right: -100%; width: 85%; max-width: 350px; height: 100vh; background-color: var(--light-color); z-index: 2001; box-shadow: -2px 0 10px rgba(0,0,0,0.1); transition: right 0.3s ease-in-out, background-color 0.3s ease; display: flex; flex-direction: column; }
+        .cart-view.open { right: 0; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; transition: border-color 0.3s ease; }
+        .cart-header h3 { font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        .cart-header h3 .cart-icon { color: var(--primary-color); }
+        .cart-header .cart-close-btn { font-size: 20px; cursor: pointer; color: white; background: red; width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+        .cart-body { flex-grow: 1; overflow-y: auto; padding: 15px; }
+        .cart-item { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; transition: border-color 0.3s ease; }
+        .cart-item-image { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+        .cart-item-details { flex-grow: 1; }
+        .cart-item-details p { margin: 0; font-size: 14px; line-height: 1.3; }
+        .cart-item-details .cart-item-size { font-size: 12px; color: #888; }
+        .cart-item-price { font-weight: bold; color: var(--primary-color); }
+        .cart-item-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+        .cart-item-qty { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 5px; transition: border-color 0.3s ease; }
+        .cart-item-qty .qty-btn { width: 28px; height: 28px; font-size: 16px;}
+        .cart-item-qty span { padding: 0 8px; font-size: 14px; }
+        .cart-item-delete { color: red; font-size: 18px; cursor: pointer; margin-left: 10px; }
+        .cart-empty-msg { text-align: center; margin-top: 50px; color: #888; }
+        .cart-footer { padding: 15px; border-top: 1px solid var(--border-color); flex-shrink: 0; transition: border-color 0.3s ease; margin-bottom: 20px; }
+        .cart-footer .subtotal-row { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; margin-bottom: 15px; }
+        .cart-footer .place-order-btn { width: 100%; padding: 12px; }
+
+        /* --- START: Draggable Floating Icons --- */
+        .whatsapp-float { position: fixed; width: 50px; height: 50px; bottom: 80px; right: 25px; background-color: #25D366; color: #FFF; border-radius: 50px; box-shadow: 2px 2px 3px #999; z-index: 100; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 28px; cursor: grab; user-select: none; -webkit-user-select: none; }
+        .theme-toggle-btn { position: fixed; bottom: 80px; right: 85px; width: 50px; height: 50px; background-color: var(--dark-color); color: var(--light-color); border: 1px solid var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; z-index: 100; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); transition: background-color 0.3s ease, color 0.3s ease; cursor: grab; user-select: none; -webkit-user-select: none; }
+        .theme-toggle-btn .fa-sun { display: none; }
+        body.dark-mode .theme-toggle-btn .fa-sun { display: block; }
+        body.dark-mode .theme-toggle-btn .fa-moon { display: none; }
+        /* --- END: Draggable Floating Icons --- */
+
+        /* --- Auth & Dashboard Page Styles --- */
+        .auth-container, .dashboard-container { padding: 20px; display: flex; flex-direction: column; justify-content: center; min-height: calc(100vh - var(--header-height) - var(--footer-nav-height)); }
+        .auth-container h2 { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group-with-icon { position: relative; }
+        .form-group-with-icon i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 16px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 16px; appearance: none; -webkit-appearance: none; background-color: var(--box-bg-color); color: var(--text-color); transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .auth-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; background-color: var(--primary-color); color: white; margin-bottom: 15px; }
+        .login-otp-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; border: 1px solid #ccc; background-color: var(--grey-color); color: var(--text-color); transition: background-color 0.3s ease, color 0.3s ease; }
+        .auth-link { text-align: center; margin-top: 30px; font-size: 16px; }
+        .auth-link a { color: var(--primary-color); text-decoration: underline; font-weight: bold; cursor: pointer; }
+        
+        /* --- START: Forget Password Captcha Styles --- */
+        .captcha-wrapper { display: flex; align-items: center; gap: 10px; }
+        .captcha-wrapper input { flex-grow: 1; }
+        #captcha-display { padding: 10px; background-color: var(--grey-color); border: 1px solid var(--border-color); border-radius: 5px; font-size: 18px; font-weight: bold; letter-spacing: 4px; text-decoration: line-through; user-select: none; color: var(--text-color); }
+        #captcha-refresh-btn { background: none; border: 1px solid var(--border-color); width: 48px; height: 48px; border-radius: 5px; cursor: pointer; font-size: 18px; color: var(--text-color); flex-shrink: 0; }
+        /* --- END: Forget Password Captcha Styles --- */
+
+        /* Dashboard Styles */
+        #dashboard-page, #profile-details-page, #edit-profile-page, #change-password-page, #forget-password-page { background-color: var(--grey-color); transition: background-color 0.3s ease; }
+        .dashboard-container { justify-content: flex-start; }
+        .dashboard-box { background: var(--box-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .profile-header { text-align: center; margin-bottom: 20px; }
+        .profile-header .profile-pic-container { position: relative; display: inline-block; }
+        .profile-header .profile-pic { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; background-color: var(--grey-color); display: inline-flex; justify-content: center; align-items: center; transition: background-color 0.3s ease; border: 3px solid var(--primary-color);}
+        .profile-header .profile-pic i { font-size: 40px; color: #ccc; }
+        #profile-pic-edit-btn { position: absolute; bottom: 10px; right: 0; background: var(--primary-color); color: white; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--light-color); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
+        .profile-header h3 { font-size: 22px; }
+        .dashboard-menu ul { list-style: none; }
+        .dashboard-menu ul li a { display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid var(--border-color); text-decoration: none; color: var(--text-color); font-size: 16px; transition: border-color 0.3s ease; }
+        .dashboard-menu ul li:last-child a { border-bottom: none; }
+        .dashboard-menu ul li a i { width: 20px; text-align: center; color: #555; }
+        body.dark-mode .dashboard-menu ul li a i { color: #ccc; }
+        .dashboard-menu ul li a:hover { color: var(--primary-color); }
+        .dashboard-menu ul li a.dashboard-active { color: var(--primary-color); font-weight: bold; }
+        
+        .orders-section h3 { font-size: 20px; margin-bottom: 15px; }
+        .orders-table-wrapper { overflow-x: auto; }
+        .orders-table { width: 100%; border-collapse: collapse; text-align: center; }
+        .orders-table th, .orders-table td { padding: 12px 8px; border: 1px solid var(--border-color); font-size: 14px; vertical-align: middle; }
+        .orders-table th { background-color: var(--grey-color); }
+        .orders-table .status { padding: 4px 8px; border-radius: 5px; color: white; font-weight: bold; font-size: 12px; }
+        .orders-table .status.pending { background-color: #ffc107; } /* Yellow */
+        .orders-table .status.success { background-color: #28a745; } /* Green - NEW */
+        .orders-table .status.new { background-color: #6c757d; } /* Grey */
+        .orders-table .status.cancelled { background-color: #dc3545; } /* Red */
+        .orders-table .discount { background-color: #28a745; color: white; padding: 4px; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center; }
+        .orders-table .actions-cell { display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .orders-table .action-btn-icon { background-color: #28a745; color: white; border: none; border-radius: 5px; width: 30px; height: 30px; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; }
+        .orders-table .action-btn-cancel { background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: 12px; }
+        .no-order-msg { text-align: center; padding: 20px; color: red; }
+
+        /* --- START: Modern Auth & Dashboard Styles --- */
+        .auth-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+        .auth-header img { width: 70px; height: 70px; margin-bottom: 10px; }
+        .auth-header h3 { font-size: 18px; font-weight: bold; color: var(--text-color); }
+        #dashboard-page .profile-header .profile-pic { width: 100px; height: 100px; border: 4px solid var(--primary-color); }
+        #dashboard-page .profile-header #profile-pic-edit-btn { bottom: 12px; right: 5px; }
+        #dashboard-page .profile-header h3 { font-size: 24px; margin-top: 5px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .dashboard-grid-item { background-color: var(--box-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center; text-decoration: none; color: var(--text-color); transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .dashboard-grid-item:hover { transform: translateY(-5px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .dashboard-grid-item i { font-size: 28px; color: var(--primary-color); margin-bottom: 10px; }
+        .dashboard-grid-item span { font-size: 14px; font-weight: 500; }
+        .dashboard-logout-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; margin-top: 20px; font-size: 16px; font-weight: bold; color: #fff; background-color: #d9534f; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; }
+        /* --- END: Modern Auth & Dashboard Styles --- */
+
+        /* Profile Details Page Styles */
+        .profile-details-container { padding: 20px; }
+        .profile-details-box { background: var(--box-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .profile-details-box:not(:first-child) { margin-top: 20px; }
+        .profile-details-box h2 { font-size: 24px; text-align: center; margin-bottom: 25px; }
+        .profile-details-box .info-row { display: flex; margin-bottom: 15px; font-size: 16px; align-items: center;}
+        .profile-details-box .info-row .info-label { font-weight: bold; width: 80px; flex-shrink: 0; color: #555 }
+        .profile-details-box .info-row .info-value { color: var(--text-color); }
+        body.dark-mode .profile-details-box .info-row .info-label { color: #ccc; }
+
+
+        /* Edit Profile Page Styles */
+        .edit-profile-container { padding: 20px; }
+        .edit-profile-box { background: var(--box-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .edit-profile-box h2 { font-size: 24px; text-align: center; margin-bottom: 25px; }
+        .edit-profile-box .form-group label { font-weight: normal; font-size: 14px; margin-bottom: 5px; }
+        .edit-profile-box .form-group input, .edit-profile-box .form-group select { background-color: var(--grey-color); }
+        .update-btn { width: 100%; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; background-color: var(--primary-color); color: white; margin-top: 10px; }
+
+        /* Change Password Page Styles */
+        .change-password-container { padding: 20px; }
+        .change-password-box { background: var(--box-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .change-password-box h2 { font-size: 24px; text-align: center; margin-bottom: 25px; }
+        .change-password-box .form-group label { font-weight: bold; font-size: 16px; margin-bottom: 8px; }
+
+        /* Product Details Page Styles */
+        #product-details-page .pdp-main-image { width: 100%; aspect-ratio: 1/1.1; object-fit: cover; }
+        #product-details-page .pdp-thumbnails { display: flex; gap: 10px; margin-top: 10px; padding: 0 15px; }
+        #product-details-page .pdp-thumbnails img { width: 60px; height: 60px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        #product-details-page .pdp-thumbnails img.active { border: 2px solid var(--primary-color); }
+        #product-details-page .pdp-breadcrumbs { font-size: 12px; color: #888; margin: 15px 0; }
+        #product-details-page .pdp-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        #product-details-page .pdp-ask-details { color: var(--primary-color); font-weight: bold; margin-bottom: 15px; }
+        #product-details-page .pdp-code { font-size: 14px; margin-bottom: 5px; }
+        #product-details-page .pdp-price { font-size: 22px; color: var(--primary-color); font-weight: bold; margin-bottom: 15px; }
+        #product-details-page .pdp-options { border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 15px 0; transition: border-color 0.3s ease; }
+        #product-details-page .pdp-options p { font-weight: bold; margin-bottom: 10px; }
+        #product-details-page .pdp-sizes { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        #product-details-page .pdp-sizes button { background: var(--box-bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
+        #product-details-page .pdp-sizes button.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        #product-details-page .pdp-actions { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        #product-details-page .pdp-qty { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 5px; transition: border-color 0.3s ease; }
+        #product-details-page #pdp-qty-value { font-size: 16px; padding: 0 10px; }
+        #product-details-page .add-to-cart-wrapper { flex-grow: 1; }
+        #product-details-page #pdp-add-to-cart-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 10px; }
+        #product-details-page .wishlist-btn { font-size: 24px; color: #888; cursor: pointer; }
+        #product-details-page .order-now-main-btn { width: 100%; padding: 14px; font-size: 18px; font-weight: bold; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        #product-details-page .pdp-info-box { border: 1px dashed var(--primary-color); border-radius: 8px; padding: 15px; margin-top: 20px; }
+        #product-details-page .pdp-info-box ul { list-style: none; }
+        #product-details-page .pdp-info-box ul li { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        #product-details-page .pdp-info-box ul li i { color: var(--primary-color); }
+        #product-details-page .pdp-info-box .contact-number { font-size: 18px; font-weight: bold; color: var(--primary-color); margin-top: 10px; }
+        #product-details-page .pdp-info-box .payment-method { border: 1px dashed red; padding: 5px 10px; display: inline-block; margin-top: 8px; }
+        #product-details-page .pdp-tabs { display: flex; border-bottom: 2px solid var(--border-color); margin-top: 25px; transition: border-color 0.3s ease; }
+        #product-details-page .pdp-tabs .tab-btn { background: none; border: none; padding: 10px 15px; cursor: pointer; font-size: 14px; color: #888; position: relative; }
+        #product-details-page .pdp-tabs .tab-btn.active { color: var(--primary-color); font-weight: bold; }
+        #product-details-page .pdp-tabs .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--primary-color); }
+        #product-details-page .tab-content { display: none; padding: 20px 0; }
+        #product-details-page .tab-content.active { display: block; }
+        #product-details-page .tab-content ul { list-style: none; padding-left: 5px; }
+        #product-details-page .tab-content ul li { margin-bottom: 8px; }
+        .related-products-title { font-size: 20px; text-align: center; margin: 30px 0 20px; }
+        .related-products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* --- Category/View All Products Page --- */
+        #category-products-page .products-grid,
+        #product-list-page .products-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding-top: 15px;
+        }
+        .page-title { text-align: center; margin-bottom: 20px; font-size: 22px; }
+
+        /* --- Checkout Page Styles --- */
+        .checkout-container { padding: 15px; }
+        .checkout-header { text-align: center; margin-bottom: 25px; }
+        .checkout-header i { font-size: 40px; color: var(--primary-color); background-color: var(--grey-color); width: 80px; height: 80px; border-radius: 50%; line-height: 80px; margin-bottom: 10px; }
+        .checkout-header h2 { font-size: 22px; font-weight: bold; }
+        .checkout-box { background: var(--box-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: background-color 0.3s ease, border-color 0.3s ease; }
+        /* --- NEW Delivery Options Style --- */
+        #checkout-page .delivery-options { margin: 20px 0; }
+        #checkout-page .delivery-options .form-group > label { margin-bottom: 15px; }
+        #checkout-page .delivery-option { position: relative; margin-bottom: 10px; }
+        #checkout-page .delivery-option input[type="radio"] { opacity: 0; position: fixed; width: 0; }
+        #checkout-page .delivery-option label { display: block; background-color: var(--grey-color); padding: 15px; padding-left: 45px; border-radius: 8px; border: 2px solid var(--border-color); cursor: pointer; transition: all 0.2s ease; }
+        #checkout-page .delivery-option label::before { content: ''; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; border: 2px solid #ccc; background: var(--light-color); }
+        #checkout-page .delivery-option input[type="radio"]:checked + label { border-color: var(--primary-color); background-color: #e6f2e6; }
+        body.dark-mode #checkout-page .delivery-option input[type="radio"]:checked + label { background-color: #2a3b2a; }
+        #checkout-page .delivery-option input[type="radio"]:checked + label::before { border-color: var(--primary-color); background-color: var(--primary-color); }
+        #checkout-page .delivery-option input[type="radio"]:checked + label::after { content: ''; position: absolute; left: 22px; top: 50%; transform: translateY(-50%) rotate(45deg); width: 6px; height: 12px; border: solid white; border-width: 0 3px 3px 0; }
+
+        #checkout-page .order-submit-btn { width: 100%; padding: 14px; font-size: 18px; font-weight: bold; }
+        #checkout-page .coupon-section { display: flex; gap: 10px; margin-bottom: 20px; }
+        #checkout-page #coupon-code { flex-grow: 1; }
+        #checkout-page #apply-coupon-btn { background-color: var(--primary-color); color: white; border: none; border-radius: 5px; padding: 0 20px; cursor: pointer; }
+        #checkout-page .checkout-product-list-item { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; transition: border-color 0.3s ease; }
+        #checkout-page .checkout-product-list-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+        #checkout-page .checkout-product-info { flex-grow: 1; }
+        #checkout-page .checkout-product-info p { font-size: 14px; }
+        #checkout-page .checkout-qty { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 5px; transition: border-color 0.3s ease; }
+        #checkout-page .checkout-qty span { padding: 0 10px; }
+        #checkout-page .totals-section .total-row { display: flex; justify-content: space-between; padding: 8px 0; }
+        #checkout-page .totals-section .total-row:not(:last-child) { border-bottom: 1px solid var(--border-color); transition: border-color 0.3s ease; }
+        #checkout-page .totals-section .total-row strong { font-size: 18px; }
+
+        /* --- NEW: Payment Page Styles --- */
+        .payment-container { padding: 20px; text-align: center; }
+        .payment-box { background-color: var(--box-bg-color); border-radius: 10px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .payment-box h2 { margin-bottom: 10px; font-size: 22px; }
+        .payment-amount { font-size: 28px; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; }
+        .payment-methods .method { display: flex; flex-direction: column; align-items: center; padding: 15px; border: 2px solid var(--border-color); border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: border-color 0.3s ease; gap: 5px;}
+        .payment-methods .method.selected { border-color: var(--primary-color); }
+        .payment-methods .method img { height: 60px; width: auto; } /* Logo size increased */
+        .payment-methods .method .method-title { font-weight: bold; font-size: 16px; margin-top: 5px; }
+        .payment-methods .method .method-details { font-size: 14px; }
+        .payment-methods .method .copy-icon { margin-left: auto; color: #888; align-self: flex-end; }
+        .payment-notice-card { background-color: var(--grey-color); border: 1px solid var(--border-color); border-left: 4px solid var(--primary-color); padding: 15px; border-radius: 8px; text-align: left; margin-bottom: 20px; }
+        .payment-notice-card p { font-size: 13px; color: var(--text-color); line-height: 1.5; margin: 0; }
+        #payment-confirm-btn { width: 100%; padding: 14px; font-size: 18px; font-weight: bold; }
+
+        /* --- NEW: Order Confirmation Page Styles --- */
+        .confirmation-container { padding: 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 70vh; }
+        .confirmation-box { background-color: var(--box-bg-color); border-radius: 10px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .confirmation-icon { font-size: 50px; color: white; background-color: #28a745; width: 90px; height: 90px; border-radius: 50%; line-height: 90px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center; }
+        .confirmation-box h2 { font-size: 24px; margin-bottom: 10px; }
+        .confirmation-box p { font-size: 16px; color: #555; margin-bottom: 25px; }
+        body.dark-mode .confirmation-box p { color: #ccc; }
+        .order-details-summary { border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: left; }
+        .order-details-summary .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .order-details-summary .detail-row:last-child { border-bottom: none; }
+        .order-details-summary .detail-row span:first-child { font-weight: bold; }
+
+        /* --- Modal Styles --- */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 3000; display: none; justify-content: center; align-items: center; }
+        .modal.visible { display: flex; }
+        .modal-content { background-color: var(--box-bg-color); color: var(--text-color); border-radius: 8px; padding: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .modal-close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; color: #888; cursor: pointer; }
+        .modal-title { font-size: 20px; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
+        .modal-body { font-size: 14px; line-height: 1.6; }
+        .modal-body h2 { font-size: 16px; margin-top: 15px; color: var(--primary-color); }
+        .modal-body ul { list-style-position: inside; padding-left: 10px; }
+        .modal-body li { margin-bottom: 8px; }
+
+        /* Order Details Modal Styles */
+        #order-details-modal-products { margin-top: 15px; }
+        .order-details-modal-item { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .order-details-modal-item:last-child { border-bottom: none; }
+        .order-details-modal-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+        .order-details-modal-item .info { flex-grow: 1; font-size: 13px; }
+        .order-details-modal-item .info .size { color: #888; font-size: 12px; }
+        .order-details-modal-item .price-qty { text-align: right; font-size: 13px; }
+
+    </style>
+</head>
+<body>
+    <!-- START: Splash Screen -->
+    <div class="splash-screen" id="splash-screen">
+        <img src="https://i.ibb.co/DHr0q3RL/20250905-012107-0000.png" alt="The Arafat Collection Logo">
+    </div>
+    <!-- END: Splash Screen -->
+
+    <div class="app-wrapper">
+        <!-- Header -->
+        <header class="app-header">
+            <button class="header-btn" id="left-header-btn"><i class="fas fa-bars"></i></button>
+            <a href="#" class="nav-link logo-container" data-page="home-page">
+                <img src="https://i.ibb.co/DHr0q3RL/20250905-012107-0000.png" alt="The Arafat Collection Logo">
+                <span id="header-title">The Arafat Collection</span>
+            </a>
+            <button class="header-btn" id="search-btn"><i class="fas fa-search"></i></button>
+        </header>
+        <div class="search-bar" id="search-bar-container"><input type="text" id="search-input" placeholder="Search for something..."></div>
+
+        <!-- Main Content -->
+        <main id="main-content">
+            <!-- Search Results Container -->
+            <div id="search-results-container" style="display: none;">
+                <div id="search-results-grid"></div>
+            </div>
+
+            <!-- Home Page -->
+            <div id="home-page" class="page active">
+                <div class="slider-container">
+                    <div class="slider-wrapper">
+                        <div class="slide"><img src="https://i.ibb.co/yBdDnc3V/3j8zd-Ss-O5q-L5r-Fx1b-Ve8-Wyn-V7-Pu-Snso-Re-Vd-TYo-YO.jpg" alt="Ad Banner 1"></div>
+                        <div class="slide"><img src="https://i.ibb.co/bMftKSdk/Eaz-FPo46-Vnjnv-Or6-L0-AYt7l2-Yn-DB8-Ud-Hs-UKck-Rm-Q.jpg" alt="Ad Banner 2"></div>
+                        <div class="slide"><img src="https://i.ibb.co/N6MV8pWK/g-Kq6a-MGcr-YXh-BZFQv7d-I5i0-DMJB6g-Kur-SP9-MJp-Wz.jpg" alt="Ad Banner 3"></div>
+                    </div>
+                    <div class="slider-nav"></div>
+                </div>
+                <div class="container" id="home-page-sections">
+                    <div class="section-title"><h2>Categories</h2><a href="#" class="view-all-btn nav-link" data-page="all-categories-page">View All</a></div>
+                    <div class="categories-grid" id="home-categories-grid"></div>
+                    
+                    <div id="homepage-dynamic-categories"></div>
+
+                    <div class="section-title"><h2>Flash Sale Products</h2><a class="view-all-btn" data-section="flash-sale-container">View All</a></div>
+                    <div class="horizontal-scroller-container" id="flash-sale-container">
+                        <div class="horizontal-scroller-wrapper">
+                            <div class="product-card horizontal-scroller-item" data-product-id="tshirt-combo"><img src="https://i.ibb.co/6cMGVp87/17566785656591947460338039492453.jpg" alt="Stylish T-Shirt"><div class="product-info"><h3>Combo Stylish T-Shirt</h3><p class="product-price">750 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="bag-travel"><img src="https://i.ibb.co/k27bFvbh/17566785832625459520928901961783.png" alt="Travel Bag Set"><div class="product-info"><h3>Premium Travel Bag Set</h3><p class="product-price">990 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="defence-stick"><img src="https://i.ibb.co/bVfwrW5/17566786161921449372105836680638.jpg" alt="Self Defence Stick"><div class="product-info"><h3>Self Defence Stick</h3><p class="product-price">790 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="watch-olevs"><img src="https://i.ibb.co/NgdK288r/17566786426518238631255805443511.jpg" alt="Olevs Watch Combo"><div class="product-info"><h3>Olevs Watch Combo</h3><p class="product-price">1050 TK</p><button class="order-btn">Order Now</button></div></div>
+                        </div>
+                    </div>
+
+                    <div class="section-title"><h2>Hot Selling Products</h2><a class="view-all-btn" data-section="hot-selling-container">View All</a></div>
+                    <div class="horizontal-scroller-container" id="hot-selling-container">
+                        <div class="horizontal-scroller-wrapper">
+                            <div class="product-card horizontal-scroller-item" data-product-id="gabadine-khaki"><img src="https://www.fultara.com/wp-content/uploads/2023/10/Mens-Original-Gabadine-Pant-Khaki-fultara.com-1.jpg" alt="Gabardine Pant"><div class="product-info"><h3>Men's -Original Gabadine Pant- Khaki</h3><p class="product-price">750 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="tshirt-combo-2"><img src="https://i.ibb.co/XZwBRcjC/17566802525967773559294356051451.jpg" alt="T-Shirt Combo"><div class="product-info"><h3>2 Pcs Combo Half Sleeve T-Shirt</h3><p class="product-price">400 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="panjabi-premium"><img src="https://i.ibb.co/gZ8c0g9w/17566802833423892510703470180748.jpg" alt="Premium Panjabi"><div class="product-info"><h3>Get The Premium Panjabi</h3><p class="product-price">1250 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="watch-stylish"><img src="https://i.ibb.co/5XnThWZ4/17566802981908851739775865786224.jpg" alt="Men's Watch"><div class="product-info"><h3>Stylish Men's Watch</h3><p class="product-price">850 TK</p><button class="order-btn">Order Now</button></div></div>
+                        </div>
+                    </div>
+
+                    <div class="section-title"><h2>New Arrival Products</h2><a class="view-all-btn" data-section="new-arrival-container">View All</a></div>
+                     <div class="horizontal-scroller-container" id="new-arrival-container">
+                        <div class="horizontal-scroller-wrapper">
+                            <div class="product-card horizontal-scroller-item" data-product-id="glucose-meter"><img src="https://i.ibb.co/67PTw3Ts/17566803753316355234557004494610.jpg" alt="Blood Glucose Meter"><div class="product-info"><h3>Medi-Check Blood Glucose Meter</h3><p class="product-price">950 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="oximeter"><img src="https://i.ibb.co/79rjTxh/17566803866717974853539003448144.png" alt="Pulse Oximeter"><div class="product-info"><h3>LK87 Fingertip Pulse Oximeter</h3><p class="product-price">650 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="blender"><img src="https://i.ibb.co/n8RT95B5/17566803982705262817071468250124.jpg" alt="Portable Blender"><div class="product-info"><h3>Portable USB Juicer Blender</h3><p class="product-price">550 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="watch-t55"><img src="https://i.ibb.co/Fkykf1b7/17566804095763107127774030891362.jpg" alt="T55 Smart Watch"><div class="product-info"><h3>T55 Smart Watch with Extra Strap</h3><p class="product-price">800 TK</p><button class="order-btn">Order Now</button></div></div>
+                        </div>
+                    </div>
+
+                    <div class="section-title"><h2>Top Selling Products</h2><a class="view-all-btn" data-section="top-selling-container">View All</a></div>
+                    <div class="horizontal-scroller-container" id="top-selling-container">
+                        <div class="horizontal-scroller-wrapper">
+                            <div class="product-card horizontal-scroller-item" data-product-id="shirt-shylooks"><img src="https://i.ibb.co/hx9JxH5x/17566805209395370241657698688847.jpg" alt="Shy Looks Shirt"><div class="product-info"><h3>Shy Looks Pure Cotton Shirt</h3><p class="product-price">600 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="baby-combo"><img src="https://i.ibb.co/0VsNpLvX/17566805303363714943644632985074.png" alt="Baby Combo Set"><div class="product-info"><h3>Baby Combo Set T-shirt</h3><p class="product-price">400 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="keyring-square"><img src="https://i.ibb.co/b5pJjCP6/1756680540427124932813388437475.jpg" alt="Wooden Key Ring"><div class="product-info"><h3>Wooden Key Ring (Square)</h3><p class="product-price">140 TK</p><button class="order-btn">Order Now</button></div></div>
+                            <div class="product-card horizontal-scroller-item" data-product-id="keyring-rect"><img src="https://i.ibb.co/Df3hqyV6/17566805515667876427636536104807.jpg" alt="Wooden Key Ring"><div class="product-info"><h3>Wooden Key Ring (Rectangle)</h3><p class="product-price">120 TK</p><button class="order-btn">Order Now</button></div></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- START: Footer HTML Changes -->
+                <footer class="app-footer">
+                    <div class="footer-section footer-brand">
+                        <img src="https://i.ibb.co/DHr0q3RL/20250905-012107-0000.png" alt="The Arafat Collection Logo">
+                        <p>The Arafat Collection</p>
+                    </div>
+                
+                    <div class="links-info-card">
+                        <div class="footer-section footer-links">
+                            <h4>Quick Links</h4>
+                            <ul>
+                                <li><a href="#" id="footer-order-tracking-link">Order Tracking</a></li>
+                                <li><a href="#" id="footer-register-link">Register</a></li>
+                                <li><a href="#" id="footer-login-link">Login</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-section footer-links">
+                            <h4>Information</h4>
+                            <ul>
+                                <li><a href="#" class="info-link" data-info="about-us">About Us</a></li>
+                                <li><a href="#" class="info-link" data-info="privacy-policy">Privacy Policy</a></li>
+                                <li><a href="#" class="info-link" data-info="terms-conditions">Terms & Conditions</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                
+                    <div class="footer-section">
+                        <h4>Follow Us</h4>
+                        <div class="footer-social-links">
+                            <div class="footer-social-column">
+                                <a href="https://www.facebook.com/share/16sfpdNA7u/" target="_blank" class="footer-social-btn facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
+                                <a href="https://www.facebook.com/share/16sfpdNA7u/" target="_blank" class="footer-social-btn telegram"><i class="fab fa-telegram-plane"></i> Telegram</a>
+                                <a href="https://www.facebook.com/share/16sfpdNA7u/" target="_blank" class="footer-social-btn whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                            </div>
+                            <div class="footer-social-column">
+                                <a href="https://www.facebook.com/share/16sfpdNA7u/" target="_blank" class="footer-social-btn tiktok"><i class="fab fa-tiktok"></i> TikTok</a>
+                                <a href="https://www.facebook.com/share/16sfpdNA7u/" target="_blank" class="footer-social-btn youtube"><i class="fab fa-youtube"></i> YouTube</a>
+                                <a href="https://www.facebook.com/share/16sfpdNA7u/" target="_blank" class="footer-social-btn instagram"><i class="fab fa-instagram"></i> Instagram</a>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="footer-bottom">
+                        <p>Developed By JR Zone @2025</p>
+                    </div>
+                </footer>
+                <!-- END: Footer HTML Changes -->
+            </div>
+            
+            <div id="product-details-page" class="page">
+                <div class="pdp-gallery">
+                    <img src="" alt="Main product image" class="pdp-main-image">
+                    <div class="pdp-thumbnails"></div>
+                </div>
+                <div class="container">
+                    <div class="pdp-breadcrumbs"></div>
+                    <h2 class="pdp-title"></h2>
+                    <a href="https://wa.me/8801787459598" target="_blank" class="pdp-ask-details"> <i class="fab fa-whatsapp"></i> Ask for details</a>
+                    <p class="pdp-code"></p>
+                    <p class="pdp-price"></p>
+
+                    <div class="pdp-options">
+                        <p>Select Size</p>
+                        <div class="pdp-sizes"></div>
+                        <div class="pdp-actions">
+                            <div class="pdp-qty">
+                                <button class="qty-btn" id="pdp-qty-minus" aria-label="Decrease quantity">-</button>
+                                <span id="pdp-qty-value">1</span>
+                                <button class="qty-btn" id="pdp-qty-plus" aria-label="Increase quantity">+</button>
+                            </div>
+                            <div class="add-to-cart-wrapper">
+                                <button id="pdp-add-to-cart-btn" class="action-btn"><i class="fas fa-shopping-cart"></i> Add To Cart</button>
+                            </div>
+                             <i class="fas fa-heart wishlist-btn"></i>
+                        </div>
+                    </div>
+                    <button id="pdp-order-now-btn" class="order-now-main-btn">Order Now ✔</button>
+
+                    <div class="pdp-info-box">
+                         <ul>
+                            <li><i class="fas fa-check-circle"></i> Order today and receive it within 01 - 02 days</li>
+                            <li><i class="fas fa-thumbs-up"></i> Quality Product</li>
+                            <li><i class="fas fa-hand-holding-usd"></i> Cash On Delivery Available</li>
+                            <li><i class="fas fa-truck"></i> Delivery Charge Inside Dhaka 70 TK</li>
+                            <li><i class="fas fa-truck"></i> Delivery Charge Outside Dhaka 130 TK</li>
+                            <li><i class="fas fa-truck"></i> Delivery Charge Dhaka Suburb 100 TK</li>
+                         </ul>
+                    </div>
+
+                    <div class="pdp-info-box">
+                         <h4>Have question about this product? please call</h4>
+                         <p class="contact-number"><i class="fas fa-phone"></i> 01576423076</p>
+                         <p class="payment-method">Bkash Personal</p>
+                         <p class="payment-method">Nagad Personal</p>
+                    </div>
+
+                    <div class="pdp-tabs">
+                        <button class="tab-btn active" data-tab="description">DESCRIPTION</button>
+                        <button class="tab-btn" data-tab="how-to-order">HOW TO ORDER</button>
+                        <button class="tab-btn" data-tab="reviews">REVIEWS</button>
+                    </div>
+                    <div id="tab-content-container">
+                        <div id="description-content" class="tab-content active"></div>
+                        <div id="how-to-order-content" class="tab-content"><p>Ordering is simple! Select your size, quantity, and click "Order Now". Then fill in your details on the checkout page.</p></div>
+                        <div id="reviews-content" class="tab-content"><p>There are no reviews for this product yet.</p></div>
+                    </div>
+
+                    <h3 class="related-products-title">Related Products</h3>
+                    <div class="related-products-grid" id="related-products-container"></div>
+                </div>
+            </div>
+
+            <div id="checkout-page" class="page">
+                <div class="checkout-container">
+                    <div class="checkout-header">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h2>Please Order Now</h2>
+                    </div>
+
+                    <div class="checkout-box">
+                        <form id="checkout-form">
+                            <div class="form-group form-group-with-icon">
+                                <label for="checkout-name">Full Name</label>
+                                <input type="text" id="checkout-name" placeholder="Full Name" required>
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="form-group form-group-with-icon">
+                                <label for="checkout-mobile">Mobile Number</label>
+                                <input type="tel" id="checkout-mobile" placeholder="01XXXXXXXXX" required>
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="form-group delivery-options">
+                                <label>Delivery Area</label>
+                                <div class="delivery-option">
+                                    <input type="radio" id="inside-dhaka" name="delivery-area" value="70" checked>
+                                    <label for="inside-dhaka">Inside Dhaka (70 TK)</label>
+                                </div>
+                                <div class="delivery-option">
+                                    <input type="radio" id="outside-dhaka" name="delivery-area" value="130">
+                                    <label for="outside-dhaka">Outside Dhaka (130 TK)</label>
+                                </div>
+                                 <div class="delivery-option">
+                                    <input type="radio" id="dhaka-suburb" name="delivery-area" value="100">
+                                    <label for="dhaka-suburb">Dhaka Suburb (100 TK)</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="checkout-address">Full Address</label>
+                                <input type="text" id="checkout-address" placeholder="Full Address" required>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="checkout-box">
+                        <div class="coupon-section">
+                            <input type="text" id="coupon-code" placeholder="Coupon Code">
+                            <button id="apply-coupon-btn">Apply</button>
+                        </div>
+
+                        <div id="checkout-product-list"></div>
+
+                        <div class="totals-section">
+                             <div class="total-row">
+                                <span>Sub Total :</span>
+                                <span id="checkout-subtotal">0 TK</span>
+                            </div>
+                             <div class="total-row">
+                                <span>Shipping Charge :</span>
+                                <span id="checkout-shipping">70 TK</span>
+                            </div>
+                             <div class="total-row">
+                                <span>Discount Amount :</span>
+                                <span id="checkout-discount">0 TK</span>
+                            </div>
+                             <div class="total-row">
+                                <strong>Payable Amount :</strong>
+                                <strong id="checkout-payable">0 TK</strong>
+                            </div>
+                        </div>
+                    </div>
+                     <button id="order-submit-btn" class="action-btn order-submit-btn"><i class="fas fa-check-circle"></i> Order Submit</button>
+                </div>
+            </div>
+
+            <!-- NEW: Payment Page -->
+            <div id="payment-page" class="page">
+                <div class="payment-container">
+                    <div class="payment-box">
+                        <h2>Pay Delivery Charge</h2>
+                        <p class="payment-amount" id="payment-page-amount">0 TK</p>
+                        <div class="payment-methods" id="payment-methods-container">
+                            <div class="method" data-number="01576423076">
+                                <img src="https://i.ibb.co/Q34QvVzP/Untitled-design-20250825-173830-0000.png" alt="bKash">
+                                <span class="method-title">বিকাশ পারসোনাল</span>
+                                <span class="method-details">01576423076 (সেন্ড মানি/ক্যাশ ইন) <i class="fas fa-copy copy-icon"></i></span>
+                            </div>
+                            <div class="method" data-number="01576423076">
+                                <img src="https://i.ibb.co/B263tnvx/Untitled-design-20250825-173854-0000.png" alt="Nagad">
+                                <span class="method-title">নগদ পারসোনাল</span>
+                                <span class="method-details">01576423076 (সেন্ড মানি/ক্যাশ ইন) <i class="fas fa-copy copy-icon"></i></span>
+                            </div>
+                            <div class="method" data-number="01576423076">
+                               <img src="https://i.ibb.co/rKZSz4L2/20250825-173920-0000.png" alt="Rocket">
+                               <span class="method-title">রকেট পারসোনাল</span>
+                               <span class="method-details">01576423076 (সেন্ড মানি/ক্যাশ ইন) <i class="fas fa-copy copy-icon"></i></span>
+                            </div>
+                        </div>
+                        <div class="payment-notice-card">
+                            <p>১ বার ক্লিক করলে একাউন্ট সিলেক্ট হবে আবার একাউন্ট নাম্বারও কপি হবে। পেমেন্ট করতে সমস্যা হলে Whatsapp এ নক দিন। উপরে নাম্বারগুলোতে কেউ কল দিবেন না প্রয়োজনে নিচের হেল্প নাম্বারে কল করুন। আমাদের নাম্বারে ভুলে মোবাইলে রিচার্জ দিলে সেই টাকার পেমেন্ট করতে পারবেন না বা টাকা ফেরত পাবেন না।</p>
+                        </div>
+                        <form id="payment-form" onsubmit="return false;">
+                            <div class="form-group">
+                                <input type="text" id="payment-number" placeholder="Payment Number" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="payment-transaction-id" placeholder="Transaction ID" required>
+                            </div>
+                            <button type="submit" id="payment-confirm-btn" class="action-btn">Confirm</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- NEW: Order Confirmation Page -->
+            <div id="confirmation-page" class="page">
+                <div class="confirmation-container">
+                    <div class="confirmation-box">
+                        <div class="confirmation-icon"><i class="fas fa-check"></i></div>
+                        <h2>Thank you</h2>
+                        <p>Your order has been successfully submitted. One of our representatives will call you shortly</p>
+                        <div class="order-details-summary">
+                            <div class="detail-row">
+                                <span>Order number:</span>
+                                <span id="conf-order-number"></span>
+                            </div>
+                             <div class="detail-row">
+                                <span>Date:</span>
+                                <span id="conf-order-date"></span>
+                            </div>
+                             <div class="detail-row">
+                                <span>Total:</span>
+                                <span id="conf-order-total"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Order Tracking Page -->
+            <div id="order-tracking-page" class="page">
+                <div class="container" style="padding-top: 40px;">
+                    <div class="checkout-box">
+                        <h2 class="page-title">Track Your Order</h2>
+                        <div class="form-group">
+                            <label for="tracking-invoice-no">Invoice No *</label>
+                            <input type="text" id="tracking-invoice-no" placeholder="Enter your invoice number">
+                        </div>
+                        <button id="track-order-btn" class="action-btn">Track Order</button>
+                    </div>
+                    <div id="tracking-result-box" class="dashboard-box" style="display: none; margin-top: 20px;"></div>
+                </div>
+            </div>
+
+
+            <div id="all-categories-page" class="page"><div class="container"><h2 class="page-title">All Categories</h2><div class="categories-grid" id="all-categories-grid"></div></div></div>
+            
+            <div id="category-products-page" class="page">
+                <div class="container">
+                    <h2 id="category-products-title" class="page-title">Products</h2>
+                    <div class="products-grid" id="category-products-grid"></div>
+                </div>
+            </div>
+
+            <!-- NEW: Generic Page for View All Products -->
+            <div id="product-list-page" class="page">
+                <div class="container">
+                    <h2 id="product-list-title" class="page-title">Products</h2>
+                    <div class="products-grid" id="product-list-grid"></div>
+                </div>
+            </div>
+
+            <div id="login-page" class="page">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <img src="https://i.ibb.co/F4cKBhgb/20250905-015110-0000.png" alt="Logo">
+                    </div>
+                    <h2>Welcome Back</h2>
+                    <form onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="login-country-code">Country Code</label>
+                            <select id="login-country-code"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-mobile-no">Mobile No *</label>
+                            <input type="tel" id="login-mobile-no" placeholder="Mobile Number">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password *</label>
+                            <input type="password" id="login-password" placeholder="password">
+                        </div>
+                        <button type="submit" id="login-btn" class="auth-btn">LOGIN</button>
+                        <button type="button" id="login-otp-btn" class="login-otp-btn">Forget Password</button>
+                    </form>
+                    <p class="auth-link">
+                        Don't have an account? <a id="go-to-register-link">Register here</a>
+                    </p>
+                </div>
+            </div>
+            <div id="register-page" class="page">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <img src="https://i.ibb.co/DHr0q3RL/20250905-012107-0000.png" alt="Logo">
+                    </div>
+                    <h2>Account Register</h2>
+                    <form onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="register-name">Name *</label>
+                            <input type="text" id="register-name" placeholder="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" placeholder="email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-country-code">Country Code</label>
+                            <select id="register-country-code"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-mobile-no">Mobile No *</label>
+                            <input type="tel" id="register-mobile-no" placeholder="Mobile Number">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password *</label>
+                            <input type="password" id="register-password" placeholder="password">
+                        </div>
+                        <button type="submit" id="register-btn" class="auth-btn">REGISTER</button>
+                    </form>
+                    <p class="auth-link">
+                        Already have an account? <a id="go-to-login-link">Login</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- START: Forget Password Page -->
+            <div id="forget-password-page" class="page">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <img src="https://i.ibb.co/F4cKBhgb/20250905-015110-0000.png" alt="Logo">
+                    </div>
+                    <h2>Reset Password</h2>
+                    <form onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="reset-country-code">Country Code</label>
+                            <select id="reset-country-code"></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-mobile-no">Phone No *</label>
+                            <input type="tel" id="reset-mobile-no" placeholder="Phone No">
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-captcha-input">Inter Code</label>
+                            <div class="captcha-wrapper">
+                                 <input type="text" id="reset-captcha-input" placeholder="Enter the code">
+                                 <div id="captcha-display"></div>
+                                 <button id="captcha-refresh-btn" type="button" aria-label="Refresh Code"><i class="fas fa-sync-alt"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="reset-new-password">New Password *</label>
+                            <input type="password" id="reset-new-password" placeholder="New Password">
+                        </div>
+                        <button type="submit" id="reset-password-btn" class="auth-btn">Done</button>
+                    </form>
+                    <p class="auth-link">
+                        Remembered your password? <a id="go-to-login-from-reset-link">Login here</a>
+                    </p>
+                </div>
+            </div>
+            <!-- END: Forget Password Page -->
+
+
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page">
+                <div class="dashboard-container">
+                    <div class="dashboard-box">
+                        <div class="profile-header">
+                            <div class="profile-pic-container">
+                                <img src="" alt="Profile Picture" class="profile-pic" id="dashboard-profile-pic">
+                                <div class="profile-pic-placeholder profile-pic" style="display: none;"><i class="fas fa-user"></i></div>
+                                <span id="profile-pic-edit-btn"><i class="fas fa-camera"></i></span>
+                            </div>
+                            <h3 id="dashboard-user-name">User Name</h3>
+                        </div>
+                        <div class="dashboard-grid">
+                            <a href="#" id="dashboard-profile-link" class="dashboard-grid-item">
+                                <i class="fas fa-user-circle"></i>
+                                <span>PROFILE</span>
+                            </a>
+                            <a href="#" id="dashboard-edit-profile-link" class="dashboard-grid-item">
+                                <i class="fas fa-edit"></i>
+                                <span>EDIT PROFILE</span>
+                            </a>
+                            <a href="#" id="dashboard-change-password-link" class="dashboard-grid-item">
+                                <i class="fas fa-key"></i>
+                                <span>CHANGE PASSWORD</span>
+                            </a>
+                             <a href="#" id="dashboard-orders-link" class="dashboard-grid-item">
+                                <i class="fas fa-box"></i>
+                                <span>ALL ORDERS</span>
+                            </a>
+                        </div>
+                         <a href="#" id="logout-btn" class="dashboard-logout-btn"><i class="fas fa-sign-out-alt"></i> LOGOUT</a>
+                    </div>
+                    <div class="dashboard-box orders-section">
+                        <h3>All Orders</h3>
+                        <div class="orders-table-wrapper">
+                            <table class="orders-table">
+                                <thead>
+                                    <tr>
+                                        <th>SL No</th>
+                                        <th>Invoice No</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Discount</th>
+                                        <th>Total</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-orders-tbody">
+                                    <!-- Order rows will go here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="no-order-msg" id="no-order-msg">No Order!</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Details Page -->
+            <div id="profile-details-page" class="page">
+                <div class="profile-details-container">
+                    <div class="profile-details-box">
+                        <h2>Profile Information</h2>
+                        <div class="info-row">
+                            <span class="info-label">Name:</span>
+                            <span class="info-value" id="profile-details-name"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value" id="profile-details-email"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone:</span>
+                            <span class="info-value" id="profile-details-phone"></span>
+                        </div>
+                         <div class="info-row">
+                            <span class="info-label">Address:</span>
+                            <span class="info-value" id="profile-details-address">N/A</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Profile Page -->
+            <div id="edit-profile-page" class="page">
+                <div class="edit-profile-container">
+                    <div class="edit-profile-box">
+                        <h2>Profile Edit</h2>
+                        <form id="edit-profile-form" onsubmit="return false;">
+                            <div class="form-group">
+                                <label for="edit-profile-name">Name</label>
+                                <input type="text" id="edit-profile-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-profile-email">Email</label>
+                                <input type="email" id="edit-profile-email">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-profile-country-code">Country Code</label>
+                                <select id="edit-profile-country-code" disabled></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-profile-phone">Phone</label>
+                                <input type="tel" id="edit-profile-phone" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-profile-city">City</label>
+                                <select id="edit-profile-city">
+                                    <option value="">--Select One--</option>
+                                    <option value="Dhaka">Dhaka</option>
+                                    <option value="Chittagong">Chittagong</option>
+                                    <option value="Khulna">Khulna</option>
+                                    <option value="Sylhet">Sylhet</option>
+                                    <option value="Rajshahi">Rajshahi</option>
+                                    <option value="Barisal">Barisal</option>
+                                    <option value="Rangpur">Rangpur</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-profile-address">Address</label>
+                                <input type="text" id="edit-profile-address" placeholder="Your full address">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-profile-image">Image</label>
+                                <input type="file" id="edit-profile-image" accept="image/*">
+                            </div>
+                            <button type="submit" id="edit-profile-update-btn" class="update-btn">Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="change-password-page" class="page">
+                <div class="change-password-container">
+                    <div class="change-password-box">
+                        <h2>Change password</h2>
+                        <form id="change-password-form" onsubmit="return false;">
+                            <div class="form-group">
+                                <label for="new-password">New Password</label>
+                                <input type="password" id="new-password" placeholder="Password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-password">Confirm password</label>
+                                <input type="password" id="confirm-password" placeholder="Confirm password" required>
+                            </div>
+                            <button type="submit" id="change-password-save-btn" class="update-btn">Save Change</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <img src="https://i.ibb.co/DHr0q3RL/20250905-012107-0000.png" alt="Logo">
+                    <h3>The Arafat Collection</h3>
+                </div>
+                <button class="close-btn" id="close-btn">&times;</button>
+            </div>
+            <ul class="sidebar-menu">
+                 <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-male menu-icon"></i> MEN'S FASHION</span> 
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><button class="accordion-btn">Panjabi <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Premium Panjabi</a></li><li><a href="#" class="category-link">Luxury Panjabi</a></li><li><a href="#" class="category-link">Basic Panjabi</a></li><li><a href="#" class="category-link">Premium Pajama</a></li><li><a href="#" class="category-link">Kabli Set</a></li><li><a href="#" class="category-link">KIds Punjabi</a></li><li><a href="#" class="category-link">Karchupi Panjabi</a></li></ul></li>
+                        <li><button class="accordion-btn">T-Shirt <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Half Sleeve T-Shirt</a></li><li><a href="#" class="category-link">Jersey Fabrics</a></li><li><a href="#" class="category-link">Cotton Fabrics</a></li><li><a href="#" class="category-link">Full Sleeve T-Shirt</a></li><li><a href="#" class="category-link">Islamic</a></li><li><a href="#" class="category-link">Drop Shoulder</a></li><li><a href="#" class="category-link">Kids T-Shirt</a></li><li><a href="#" class="category-link">Combo T-Shirt</a></li></ul></li>
+                        <li><button class="accordion-btn">Shirts <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Baby Shirts</a></li><li><a href="#" class="category-link">Polo Casual Solid Shirt</a></li><li><a href="#" class="category-link">Men's Stylish Casual Shirt</a></li><li><a href="#" class="category-link">Formal Shirt</a></li><li><a href="#" class="category-link">Double Pocket Shirt</a></li><li><a href="#" class="category-link">Half Sleeve</a></li><li><a href="#" class="category-link">Premium Full Sleeve Shirt</a></li><li><a href="#" class="category-link">Cotton Full Sleeve Check Shirt</a></li><li><a href="#" class="category-link">Luxury Prints Shirt</a></li><li><a href="#" class="category-link">Check - Shirt</a></li></ul></li>
+                        <li><button class="accordion-btn">Pants <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Jeans Pant</a></li><li><a href="#" class="category-link">Gabardine Pant</a></li><li><a href="#" class="category-link">Joggers</a></li><li><a href="#" class="category-link">Trouser</a></li><li><a href="#" class="category-link">Formal Pant</a></li></ul></li>
+                        <li><button class="accordion-btn">Cotton Katua <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Katua</a></li></ul></li>
+                         <li><button class="accordion-btn">Men's Accessories <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Watch</a></li><li><a href="#" class="category-link">Belt</a></li><li><a href="#" class="category-link">Wallet</a></li><li><a href="#" class="category-link">Grooming</a></li><li><a href="#" class="category-link">Cap Item</a></li><li><a href="#" class="category-link">Jersey & Sports</a></li></ul></li>
+                    </ul>
+                </li>
+                <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-female menu-icon"></i> WOMEN'S FASHION</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><a href="#" class="category-link">Sharee</a></li>
+                        <li><button class="accordion-btn">Salwar-Kameez <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">3 Pcs</a></li><li><a href="#" class="category-link">2 Pcs</a></li><li><a href="#" class="category-link">Kurti</a></li></ul></li>
+                        <li><button class="accordion-btn">Borka <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Borka & Hijab</a></li><li><a href="#" class="category-link">Only Hijab</a></li><li><a href="#" class="category-link">Abaya</a></li><li><a href="#" class="category-link">Khimar</a></li><li><a href="#" class="category-link">Palazzo Khimar Set</a></li></ul></li>
+                        <li><button class="accordion-btn">Women's Accessories <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Watch</a></li><li><a href="#" class="category-link">Women' Bag</a></li></ul></li>
+                        <li><button class="accordion-btn">Jewellery <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Earring</a></li><li><a href="#" class="category-link">Baslate</a></li><li><a href="#" class="category-link">Nose Pin</a></li><li><a href="#" class="category-link">Ring</a></li><li><a href="#" class="category-link">Pendant</a></li><li><a href="#" class="category-link">Necklace</a></li></ul></li>
+                        <li><button class="accordion-btn">Cosmetics <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Skin Care</a></li><li><a href="#" class="category-link">Makeup</a></li><li><a href="#" class="category-link">Hair Care</a></li></ul></li>
+                        <li><a href="#" class="category-link">Ladies Bag</a></li>
+                        <li><button class="accordion-btn">Girls Wear <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Ladies T - Shirt</a></li><li><a href="#" class="category-link">Ladies Dropsolder</a></li><li><a href="#" class="category-link">Mexi</a></li></ul></li>
+                    </ul>
+                </li>
+                <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-couch menu-icon"></i> HOME & LIFESTYLE</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><button class="accordion-btn">Bed Sheet <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Cotton Bed Sheet (Bangla)</a></li><li><a href="#" class="category-link">Panel Bed Sheet (3pcs)</a></li><li><a href="#" class="category-link">Cotton Design Bedsheet (4pcs Set)</a></li><li><a href="#" class="category-link">Panel Bed Sheet (8 Pieces)</a></li><li><a href="#" class="category-link">China Premium 3D Design Bed Sheet</a></li><li><a href="#" class="category-link">Water Proof 3d Bed Shit</a></li></ul></li>
+                        <li><button class="accordion-btn">Home Appliance <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Table Clock</a></li><li><a href="#" class="category-link">3D Design Mug</a></li><li><a href="#" class="category-link">3d Curtain</a></li><li><a href="#" class="category-link">Table Cloth</a></li><li><a href="#" class="category-link">Tripod And Stand</a></li><li><a href="#" class="category-link">Wall Decor</a></li></ul></li>
+                        <li><button class="accordion-btn">Health & Beauty <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Organic Food</a></li><li><a href="#" class="category-link">Eexercise Item</a></li><li><a href="#" class="category-link">Fragrances</a></li><li><a href="#" class="category-link">Personal Care</a></li><li><a href="#" class="category-link">Men's Care</a></li></ul></li>
+                        <li><button class="accordion-btn">Ketchen & Dining <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Kitchen Item</a></li><li><a href="#" class="category-link">Kitchen</a></li><li><a href="#" class="category-link">Bottle / Mug / Cup</a></li><li><a href="#" class="category-link">Grinders</a></li><li><a href="#" class="category-link">Electric Kettle</a></li></ul></li>
+                        <li><button class="accordion-btn">Islamic Corner <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Tupi</a></li><li><a href="#" class="category-link">Ator</a></li><li><a href="#" class="category-link">Jainamaj</a></li><li><a href="#" class="category-link">Others Islamic Product</a></li><li><a href="#" class="category-link">Cloth Item</a></li></ul></li>
+                        <li><a href="#" class="category-link">Rain Item</a></li>
+                        <li><button class="accordion-btn">Sunglasses <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Unisex Sunglass</a></li><li><a href="#" class="category-link">Ladies Sunglass</a></li><li><a href="#" class="category-link">Gent's Sunglass</a></li></ul></li>
+                        <li><button class="accordion-btn">Bag <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Student Bag</a></li><li><a href="#" class="category-link">Hands Parts Bag</a></li><li><a href="#" class="category-link">Travel Bag</a></li><li><a href="#" class="category-link">Women's Bags</a></li><li><a href="#" class="category-link">Men's Bag</a></li></ul></li>
+                        <li><button class="accordion-btn">Watches <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Premium Watch</a></li><li><a href="#" class="category-link">Basic Watch</a></li><li><a href="#" class="category-link">Ladies Watch</a></li><li><a href="#" class="category-link">Couple Watch</a></li><li><a href="#" class="category-link">Smart Watch</a></li><li><a href="#" class="category-link">Luxury Watch</a></li><li><a href="#" class="category-link">KIds Watch</a></li></ul></li>
+                    </ul>
+                </li>
+                <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-laptop-house menu-icon"></i> GADGETS & ELECTRONICS</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><button class="accordion-btn">Mobile Accessories <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Earbuds & Bluetooth</a></li><li><a href="#" class="category-link">Power Bank</a></li><li><a href="#" class="category-link">Video Kit</a></li><li><a href="#" class="category-link">Headphone</a></li><li><a href="#" class="category-link">Cable & Charger</a></li><li><a href="#" class="category-link">Mobile Phone</a></li></ul></li>
+                        <li><button class="accordion-btn">Content Tools <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Tripod & Stand</a></li><li><a href="#" class="category-link">Camera</a></li><li><a href="#" class="category-link">Microphone</a></li></ul></li>
+                        <li><button class="accordion-btn">Electronics <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Electronic Device</a></li><li><a href="#" class="category-link">Electronic Item</a></li><li><a href="#" class="category-link">Router</a></li></ul></li>
+                        <li><button class="accordion-btn">Shaver & Trimmer <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Kemei</a></li></ul></li>
+                        <li><button class="accordion-btn">Speaker <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Wareless Speaker</a></li><li><a href="#" class="category-link">Mini -Speaker</a></li><li><a href="#" class="category-link">Computer Speaker</a></li></ul></li>
+                        <li><button class="accordion-btn">Fan Item <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Air Cooler Fan</a></li><li><a href="#" class="category-link">Mini Fan</a></li><li><a href="#" class="category-link">Rechargeable Fan</a></li></ul></li>
+                        <li><button class="accordion-btn">Computer Item <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Mouse & Key-Board</a></li><li><a href="#" class="category-link">Computer Accessories</a></li><li><a href="#" class="category-link">Awei Brand</a></li></ul></li>
+                    </ul>
+                </li>
+                 <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-child menu-icon"></i> KIDS ZONE</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><a href="#" class="category-link">Transparent Toys</a></li><li><a href="#" class="category-link">Baby Item</a></li><li><a href="#" class="category-link">Robot Car</a></li><li><a href="#" class="category-link">Baby Toy</a></li>
+                        <li><button class="accordion-btn">Children Clothing <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Kids T-Shirt</a></li><li><a href="#" class="category-link">Babys Punjabi</a></li><li><a href="#" class="category-link">Kids Shirt</a></li></ul></li>
+                    </ul>
+                </li>
+                 <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-gift menu-icon"></i> CUSTOMIZE & GIFT</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><a href="#" class="category-link">Gift Item</a></li>
+                        <li><button class="accordion-btn">Customize Item <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Crest</a></li><li><a href="#" class="category-link">Bottle & Mug</a></li><li><a href="#" class="category-link">Clothes</a></li><li><a href="#" class="category-link">Pen & Key-Ring</a></li><li><a href="#" class="category-link">ID Card & Diary</a></li></ul></li>
+                    </ul>
+                </li>
+                <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-tags menu-icon"></i> OFFER</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><a href="#" class="category-link">Mystery Box</a></li>
+                        <li><a href="#" class="category-link">Stock Clearance Sale</a></li>
+                        <li><a href="#" class="category-link">Big Offer</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <button class="accordion-btn">
+                        <span><i class="fas fa-ellipsis-h menu-icon"></i> OTHER'S</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="submenu">
+                        <li><a href="#" class="category-link">Other's</a></li>
+                        <li><button class="accordion-btn">Combo Pack <i class="fas fa-chevron-down"></i></button><ul class="submenu"><li><a href="#" class="category-link">Gadget</a></li><li><a href="#" class="category-link">Clothing</a></li><li><a href="#" class="category-link">Mixing</a></li></ul></li>
+                        <li><a href="#" class="category-link">Couple</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="backdrop" id="backdrop"></div>
+        
+        <div class="cart-view" id="cart-view">
+            <div class="cart-header"><h3><i class="fas fa-shopping-cart cart-icon"></i> Your Cart</h3><button class="cart-close-btn">&times;</button></div>
+            <div class="cart-body" id="cart-items-container"></div>
+            <div class="cart-footer">
+                <div class="subtotal-row"><span>Subtotal</span><span id="cart-footer-subtotal">0 TK</span></div>
+                <button id="cart-place-order-btn" class="action-btn place-order-btn">Place Order</button>
+            </div>
+        </div>
+
+        <a href="https://wa.me/8801787459598" class="whatsapp-float" id="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+
+        <nav class="footer-nav">
+            <a href="#" class="nav-item nav-link active" data-page="home-page"><i class="fas fa-home"></i><span>Home</span></a>
+            <a href="#" class="nav-item nav-link" data-page="all-categories-page"><i class="fas fa-th-large"></i><span>Category</span></a>
+            <a href="#" class="nav-item" id="cart-btn"><i class="fas fa-shopping-cart"></i><span id="cart-counter">0</span><span>Cart</span></a>
+            <a href="tel:+8801576423076" class="nav-item" id="footer-call-link"><i class="fas fa-phone"></i><span>Call</span></a>
+            <a href="#" class="nav-item" id="auth-nav-link" data-page="login-page"><i class="fas fa-user"></i><span>Login</span></a>
+        </nav>
+    </div>
+
+    <!-- START: Theme Toggle Button -->
+    <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle theme">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+    </button>
+    <!-- END: Theme Toggle Button -->
+
+    <!-- Generic Modal for Info Pages and Order Details -->
+    <div class="modal" id="generic-modal">
+        <div class="modal-content">
+            <span class="modal-close-btn">&times;</span>
+            <h3 class="modal-title" id="modal-title"></h3>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // <!-- NEW/MODIFIED START: Enhanced applyGlobalSettings function -->
+        function applyGlobalSettings() {
+            const SETTINGS_KEY = 'app_settings';
+            const defaultSettings = {
+                appName: "The Arafat Collection",
+                appLogo: "https://i.ibb.co/DHr0q3RL/20250905-012107-0000.png",
+                callNumber: "+8801576423076",
+                whatsappNumber: "8801787459598",
+                showDarkModeToggle: true,
+                showWhatsappFloat: true,
+                facebookLink: "https://www.facebook.com/share/16sfpdNA7u/",
+                telegramLink: "https://www.facebook.com/share/16sfpdNA7u/",
+                footerWhatsappLink: "https://www.facebook.com/share/16sfpdNA7u/",
+                tiktokLink: "https://www.facebook.com/share/16sfpdNA7u/",
+                youtubeLink: "https://www.facebook.com/share/16sfpdNA7u/",
+                instagramLink: "https://www.facebook.com/share/16sfpdNA7u/",
+                aboutUsContent: `<h2>Welcome to The Arafat Collection</h2><p>Your default about us content goes here. You can change this from the admin panel.</p>`,
+                privacyPolicyContent: `<h2>Privacy Policy</h2><p>Your default privacy policy content goes here. You can change this from the admin panel.</p>`,
+                termsConditionsContent: `<h2>Terms & Conditions</h2><p>Your default terms and conditions content goes here. You can change this from the admin panel.</p>`
+            };
+            
+            const storedSettings = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+            const settings = { ...defaultSettings, ...storedSettings };
+            
+            // Apply App Name and Logo
+            document.querySelectorAll('.splash-screen img, .app-header .logo-container img, .footer-brand img, .sidebar-header .sidebar-title img, .auth-header img').forEach(img => {
+                if (img.src) img.src = settings.appLogo;
+            });
+            document.querySelectorAll('#header-title, .footer-brand p, .sidebar-header .sidebar-title h3').forEach(el => {
+                if (el) el.textContent = settings.appName;
+            });
+            document.title = `${settings.appName} - Mobile App`;
+
+            // Apply Call Number
+            const callLink = document.getElementById('footer-call-link');
+            if (callLink) callLink.href = `tel:${settings.callNumber}`;
+
+            // Apply WhatsApp Floating Icon Number & Visibility
+            const whatsappFloat = document.getElementById('whatsapp-float');
+            if (whatsappFloat) {
+                whatsappFloat.href = `https://wa.me/${settings.whatsappNumber}`;
+                whatsappFloat.style.display = settings.showWhatsappFloat ? 'flex' : 'none';
+            }
+
+            // Apply Dark Mode Toggle Visibility
+            const themeToggle = document.getElementById('theme-toggle-btn');
+            if (themeToggle) {
+                themeToggle.style.display = settings.showDarkModeToggle ? 'flex' : 'none';
+            }
+
+            // Apply Social Media Links
+            const facebookBtn = document.querySelector('.footer-social-btn.facebook');
+            if(facebookBtn) facebookBtn.href = settings.facebookLink;
+            
+            const telegramBtn = document.querySelector('.footer-social-btn.telegram');
+            if(telegramBtn) telegramBtn.href = settings.telegramLink;
+
+            const footerWhatsappBtn = document.querySelector('.footer-social-btn.whatsapp');
+            if(footerWhatsappBtn) footerWhatsappBtn.href = settings.footerWhatsappLink;
+            
+            const tiktokBtn = document.querySelector('.footer-social-btn.tiktok');
+            if(tiktokBtn) tiktokBtn.href = settings.tiktokLink;
+
+            const youtubeBtn = document.querySelector('.footer-social-btn.youtube');
+            if(youtubeBtn) youtubeBtn.href = settings.youtubeLink;
+
+            const instagramBtn = document.querySelector('.footer-social-btn.instagram');
+            if(instagramBtn) instagramBtn.href = settings.instagramLink;
+
+            // Store dynamic content globally for the modal to use
+             window.dynamicInfoContent = {
+                'about-us': { title: 'About ' + settings.appName, content: settings.aboutUsContent },
+                'privacy-policy': { title: 'Privacy Policy', content: settings.privacyPolicyContent },
+                'terms-conditions': { title: 'Terms & Conditions', content: settings.termsConditionsContent }
+            };
+        }
+        applyGlobalSettings();
+        // <!-- NEW/MODIFIED END -->
+        
+        // --- Splash Screen & Theme Toggle Logic ---
+        const splashScreen = document.getElementById('splash-screen');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const body = document.body;
+
+        setTimeout(() => {
+            splashScreen.classList.add('hidden');
+        }, 3000);
+
+        const applyTheme = (theme) => {
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+            }
+            localStorage.setItem('theme', theme);
+        };
+
+        themeToggleBtn.addEventListener('click', () => {
+            // This click event is handled by the draggable logic to prevent firing on drag
+        });
+
+        applyTheme(localStorage.getItem('theme') || 'light');
+        
+        // --- Country Code Data ---
+        const countryCodes = [
+            { name: 'Afghanistan', code: '+93' }, { name: 'Albania', code: '+355' }, { name: 'Algeria', code: '+213' },
+            { name: 'American Samoa', code: '+1-684' }, { name: 'Andorra', code: '+376' }, { name: 'Angola', code: '+244' },
+            { name: 'Anguilla', code: '+1-264' }, { name: 'Antarctica', code: '+672' }, { name: 'Antigua and Barbuda', code: '+1-268' },
+            { name: 'Argentina', code: '+54' }, { name: 'Armenia', code: '+374' }, { name: 'Aruba', code: '+297' },
+            { name: 'Australia', code: '+61' }, { name: 'Austria', code: '+43' }, { name: 'Azerbaijan', code: '+994' },
+            { name: 'Bahamas', code: '+1-242' }, { name: 'Bahrain', code: '+973' }, { name: 'Bangladesh', code: '+880' },
+            { name: 'Barbados', code: '+1-246' }, { name: 'Belarus', code: '+375' }, { name: 'Belgium', code: '+32' },
+            { name: 'Belize', code: '+501' }, { name: 'Benin', code: '+229' }, { name: 'Bermuda', code: '+1-441' },
+            { name: 'Bhutan', code: '+975' }, { name: 'Bolivia', code: '+591' }, { name: 'Bosnia and Herzegovina', code: '+387' },
+            { name: 'Botswana', code: '+267' }, { name: 'Brazil', code: '+55' }, { name: 'British Indian Ocean Territory', code: '+246' },
+            { name: 'British Virgin Islands', code: '+1-284' }, { name: 'Brunei', code: '+673' }, { name: 'Bulgaria', code: '+359' },
+            { name: 'Burkina Faso', code: '+226' }, { name: 'Burundi', code: '+257' }, { name: 'Cambodia', code: '+855' },
+            { name: 'Cameroon', code: '+237' }, { name: 'Canada', code: '+1' }, { name: 'Cape Verde', code: '+238' },
+            { name: 'Cayman Islands', code: '+1-345' }, { name: 'Central African Republic', code: '+236' }, { name: 'Chad', code: '+235' },
+            { name: 'Chile', code: '+56' }, { name: 'China', code: '+86' }, { name: 'Christmas Island', code: '+61' },
+            { name: 'Cocos Islands', code: '+61' }, { name: 'Colombia', code: '+57' }, { name: 'Comoros', code: '+269' },
+            { name: 'Cook Islands', code: '+682' }, { name: 'Costa Rica', code: '+506' }, { name: 'Croatia', code: '+385' },
+            { name: 'Cuba', code: '+53' }, { name: 'Curacao', code: '+599' }, { name: 'Cyprus', code: '+357' },
+            { name: 'Czech Republic', code: '+420' }, { name: 'Democratic Republic of the Congo', code: '+243' }, { name: 'Denmark', code: '+45' },
+            { name: 'Djibouti', code: '+253' }, { name: 'Dominica', code: '+1-767' }, { name: 'Dominican Republic', code: '+1-809' },
+            { name: 'East Timor', code: '+670' }, { name: 'Ecuador', code: '+593' }, { name: 'Egypt', code: '+20' },
+            { name: 'El Salvador', code: '+503' }, { name: 'Equatorial Guinea', code: '+240' }, { name: 'Eritrea', code: '+291' },
+            { name: 'Estonia', code: '+372' }, { name: 'Ethiopia', code: '+251' }, { name: 'Falkland Islands', code: '+500' },
+            { name: 'Faroe Islands', code: '+298' }, { name: 'Fiji', code: '+679' }, { name: 'Finland', code: '+358' },
+            { name: 'France', code: '+33' }, { name: 'French Polynesia', code: '+689' }, { name: 'Gabon', code: '+241' },
+            { name: 'Gambia', code: '+220' }, { name: 'Georgia', code: '+995' }, { name: 'Germany', code: '+49' },
+            { name: 'Ghana', code: '+233' }, { name: 'Gibraltar', code: '+350' }, { name: 'Greece', code: '+30' },
+            { name: 'Greenland', code: '+299' }, { name: 'Grenada', code: '+1-473' }, { name: 'Guam', code: '+1-671' },
+            { name: 'Guatemala', code: '+502' }, { name: 'Guernsey', code: '+44-1481' }, { name: 'Guinea', code: '+224' },
+            { name: 'Guinea-Bissau', code: '+245' }, { name: 'Guyana', code: '+592' }, { name: 'Haiti', code: '+509' },
+            { name: 'Honduras', code: '+504' }, { name: 'Hong Kong', code: '+852' }, { name: 'Hungary', code: '+36' },
+            { name: 'Iceland', code: '+354' }, { name: 'India', code: '+91' }, { name: 'Indonesia', code: '+62' },
+            { name: 'Iran', code: '+98' }, { name: 'Iraq', code: '+964' }, { name: 'Ireland', code: '+353' },
+            { name: 'Isle of Man', code: '+44-1624' }, { name: 'Israel', code: '+972' }, { name: 'Italy', code: '+39' },
+            { name: 'Ivory Coast', code: '+225' }, { name: 'Jamaica', code: '+1-876' }, { name: 'Japan', code: '+81' },
+            { name: 'Jersey', code: '+44-1534' }, { name: 'Jordan', code: '+962' }, { name: 'Kazakhstan', code: '+7' },
+            { name: 'Kenya', code: '+254' }, { name: 'Kiribati', code: '+686' }, { name: 'Kosovo', code: '+383' },
+            { name: 'Kuwait', code: '+965' }, { name: 'Kyrgyzstan', code: '+996' }, { name: 'Laos', code: '+856' },
+            { name: 'Latvia', code: '+371' }, { name: 'Lebanon', code: '+961' }, { name: 'Lesotho', code: '+266' },
+            { name: 'Liberia', code: '+231' }, { name: 'Libya', code: '+218' }, { name: 'Liechtenstein', code: '+423' },
+            { name: 'Lithuania', code: '+370' }, { name: 'Luxembourg', code: '+352' }, { name: 'Macau', code: '+853' },
+            { name: 'Macedonia', code: '+389' }, { name: 'Madagascar', code: '+261' }, { name: 'Malawi', code: '+265' },
+            { name: 'Malaysia', code: '+60' }, { name: 'Maldives', code: '+960' }, { name: 'Mali', code: '+223' },
+            { name: 'Malta', code: '+356' }, { name: 'Marshall Islands', code: '+692' }, { name: 'Mauritania', code: '+222' },
+            { name: 'Mauritius', code: '+230' }, { name: 'Mayotte', code: '+262' }, { name: 'Mexico', code: '+52' },
+            { name: 'Micronesia', code: '+691' }, { name: 'Moldova', code: '+373' }, { name: 'Monaco', code: '+377' },
+            { name: 'Mongolia', code: '+976' }, { name: 'Montenegro', code: '+382' }, { name: 'Montserrat', code: '+1-664' },
+            { name: 'Morocco', code: '+212' }, { name: 'Mozambique', code: '+258' }, { name: 'Myanmar', code: '+95' },
+            { name: 'Namibia', code: '+264' }, { name: 'Nauru', code: '+674' }, { name: 'Nepal', code: '+977' },
+            { name: 'Netherlands', code: '+31' }, { name: 'Netherlands Antilles', code: '+599' }, { name: 'New Caledonia', code: '+687' },
+            { name: 'New Zealand', code: '+64' }, { name: 'Nicaragua', code: '+505' }, { name: 'Niger', code: '+227' },
+            { name: 'Nigeria', code: '+234' }, { name: 'Niue', code: '+683' }, { name: 'North Korea', code: '+850' },
+            { name: 'Northern Mariana Islands', code: '+1-670' }, { name: 'Norway', code: '+47' }, { name: 'Oman', code: '+968' },
+            { name: 'Pakistan', code: '+92' }, { name: 'Palau', code: '+680' }, { name: 'Palestine', code: '+970' },
+            { name: 'Panama', code: '+507' }, { name: 'Papua New Guinea', code: '+675' }, { name: 'Paraguay', code: '+595' },
+            { name: 'Peru', code: '+51' }, { name: 'Philippines', code: '+63' }, { name: 'Pitcairn', code: '+64' },
+            { name: 'Poland', code: '+48' }, { name: 'Portugal', code: '+351' }, { name: 'Puerto Rico', code: '+1-787' },
+            { name: 'Qatar', code: '+974' }, { name: 'Republic of the Congo', code: '+242' }, { name: 'Reunion', code: '+262' },
+            { name: 'Romania', code: '+40' }, { name: 'Russia', code: '+7' }, { name: 'Rwanda', code: '+250' },
+            { name: 'Saint Barthelemy', code: '+590' }, { name: 'Saint Helena', code: '+290' }, { name: 'Saint Kitts and Nevis', code: '+1-869' },
+            { name: 'Saint Lucia', code: '+1-758' }, { name: 'Saint Martin', code: '+590' }, { name: 'Saint Pierre and Miquelon', code: '+508' },
+            { name: 'Saint Vincent and the Grenadines', code: '+1-784' }, { name: 'Samoa', code: '+685' }, { name: 'San Marino', code: '+378' },
+            { name: 'Sao Tome and Principe', code: '+239' }, { name: 'Saudi Arabia', code: '+966' }, { name: 'Senegal', code: '+221' },
+            { name: 'Serbia', code: '+381' }, { name: 'Seychelles', code: '+248' }, { name: 'Sierra Leone', code: '+232' },
+            { name: 'Singapore', code: '+65' }, { name: 'Sint Maarten', code: '+1-721' }, { name: 'Slovakia', code: '+421' },
+            { name: 'Slovenia', code: '+386' }, { name: 'Solomon Islands', code: '+677' }, { name: 'Somalia', code: '+252' },
+            { name: 'South Africa', code: '+27' }, { name: 'South Korea', code: '+82' }, { name: 'South Sudan', code: '+211' },
+            { name: 'Spain', code: '+34' }, { name: 'Sri Lanka', code: '+94' }, { name: 'Sudan', code: '+249' },
+            { name: 'Suriname', code: '+597' }, { name: 'Svalbard and Jan Mayen', code: '+47' }, { name: 'Swaziland', code: '+268' },
+            { name: 'Sweden', code: '+46' }, { name: 'Switzerland', code: '+41' }, { name: 'Syria', code: '+963' },
+            { name: 'Taiwan', code: '+886' }, { name: 'Tajikistan', code: '+992' }, { name: 'Tanzania', code: '+255' },
+            { name: 'Thailand', code: '+66' }, { name: 'Togo', code: '+228' }, { name: 'Tokelau', code: '+690' },
+            { name: 'Tonga', code: '+676' }, { name: 'Trinidad and Tobago', code: '+1-868' }, { name: 'Tunisia', code: '+216' },
+            { name: 'Turkey', code: '+90' }, { name: 'Turkmenistan', code: '+993' }, { name: 'Turks and Caicos Islands', code: '+1-649' },
+            { name: 'Tuvalu', code: '+688' }, { name: 'U.S. Virgin Islands', code: '+1-340' }, { name: 'Uganda', code: '+256' },
+            { name: 'Ukraine', code: '+380' }, { name: 'United Arab Emirates', code: '+971' }, { name: 'United Kingdom', code: '+44' },
+            { name: 'United States', code: '+1' }, { name: 'Uruguay', code: '+598' }, { name: 'Uzbekistan', code: '+998' },
+            { name: 'Vanuatu', code: '+678' }, { name: 'Vatican', code: '+379' }, { name: 'Venezuela', code: '+58' },
+            { name: 'Vietnam', code: '+84' }, { name: 'Wallis and Futuna', code: '+681' }, { name: 'Western Sahara', code: '+212' },
+            { name: 'Yemen', code: '+967' }, { name: 'Zambia', code: '+260' }, { name: 'Zimbabwe', code: '+263' }
+        ];
+
+        // --- DATA STORE ---
+        const products = {
+            "sports-combo": { id: "sports-combo", name: "Stylish Sports T-Shirt & Trousers", price: 750, images: ["https://i.postimg.cc/tJ0G5q5q/combo.jpg"], sizes: ["M", "L", "XL"], descriptionHTML: "<p>A stylish combo for sports and casual wear.</p>", relatedProductIds: ["tshirt-combo"] },
+            "gabadine-khaki": { id: "gabadine-khaki", name: "Men's -Original Gabadine Pant- Khaki", price: 750, code: "7089", images: [ "https://www.fultara.com/wp-content/uploads/2023/10/Mens-Original-Gabadine-Pant-Khaki-fultara.com-1.jpg", "https://www.fultara.com/wp-content/uploads/2023/10/Mens-Original-Gabadine-Pant-Khaki-fultara.com-3.jpg", "https://www.fultara.com/wp-content/uploads/2023/10/Mens-Original-Gabadine-Pant-Khaki-fultara.com-2.jpg" ], sizes: ["30", "32", "34", "36", "28"], breadcrumbs: "Home > Men's Fashion > Pants > Gabardine Pant", descriptionHTML: `<ul><li>Men's Gabardine Pant</li><li>Main Material: Twill</li><li>Wash & Care: Machine Wash</li><li>Waist: Mid-rise</li><li>Quality: 98% Cotton 2% Spandex</li><li>Buttery smooth chinos made with soft twill and washed to perfection</li><li>Stylish and Fashionable</li><li>Zip fly</li><li>Pocket: 2 Side pocket, 2 Back pocket</li><li>Gender: Men</li><li>100% Comfortable</li></ul>`, relatedProductIds: ["tshirt-combo", "tshirt-combo-2"] },
+            "tshirt-combo": { id: "tshirt-combo", name: "Combo Stylish T-Shirt", price: 750, images: ["https://i.ibb.co/6cMGVp87/17566785656591947460338039492453.jpg"], sizes: ["M", "L", "XL"], descriptionHTML: "<p>A combo of stylish t-shirts for everyday wear.</p>", relatedProductIds: ["tshirt-combo-2", "shirt-shylooks"] },
+            "bag-travel": { id: "bag-travel", name: "Premium Travel Bag Set", price: 990, images: ["https://i.ibb.co/k27bFvbh/17566785832625459520928901961783.png"], sizes: ["N/A"], descriptionHTML: "<p>Durable and spacious travel bag set.</p>", relatedProductIds: [] },
+            "defence-stick": { id: "defence-stick", name: "Self Defence Stick", price: 790, images: ["https://i.ibb.co/bVfwrW5/17566786161921449372105836680638.jpg"], sizes: ["N/A"], descriptionHTML: "<p>A reliable tool for personal safety.</p>", relatedProductIds: [] },
+            "watch-olevs": { id: "watch-olevs", name: "Olevs Watch Combo", price: 1050, images: ["https://i.ibb.co/NgdK288r/17566786426518238631255805443511.jpg"], sizes: ["Adjustable"], descriptionHTML: "<p>Elegant watch combo for couples.</p>", relatedProductIds: ["watch-stylish", "watch-t55"] },
+            "tshirt-combo-2": { id: "tshirt-combo-2", name: "2 Pcs Combo Half Sleeve T-Shirt", price: 400, images: ["https://i.ibb.co/XZwBRcjC/17566802525967773559294356051451.jpg"], sizes: ["M", "L", "XL"], descriptionHTML: "<p>Comfortable cotton t-shirts.</p>", relatedProductIds: ["tshirt-combo", "shirt-shylooks"]},
+            "panjabi-premium": { id: "panjabi-premium", name: "Get The Premium Panjabi", price: 1250, images: ["https://i.ibb.co/gZ8c0g9w/17566802833423892510703470180748.jpg"], sizes: ["40", "42", "44"], descriptionHTML: "<p>Exquisite premium panjabi for special occasions.</p>", relatedProductIds: [] },
+            "watch-stylish": { id: "watch-stylish", name: "Stylish Men's Watch", price: 850, images: ["https://i.ibb.co/5XnThWZ4/17566802981908851739775865786224.jpg"], sizes: ["Adjustable"], descriptionHTML: "<p>A stylish watch for the modern man.</p>", relatedProductIds: ["watch-olevs", "watch-t55"] },
+            "glucose-meter": { id: "glucose-meter", name: "Medi-Check Blood Glucose Meter", price: 950, images: ["https://i.ibb.co/67PTw3Ts/17566803753316355234557004494610.jpg"], sizes: ["N/A"], descriptionHTML: "<p>Reliable blood glucose monitoring system.</p>", relatedProductIds: ["oximeter"]},
+            "oximeter": { id: "oximeter", name: "LK87 Fingertip Pulse Oximeter", price: 650, images: ["https://i.ibb.co/79rjTxh/17566803866717974853539003448144.png"], sizes: ["N/A"], descriptionHTML: "<p>Accurate pulse and blood oxygen saturation readings.</p>", relatedProductIds: ["glucose-meter"]},
+            "blender": { id: "blender", name: "Portable USB Juicer Blender", price: 550, images: ["https://i.ibb.co/n8RT95B5/17566803982705262817071468250124.jpg"], sizes: ["N/A"], descriptionHTML: "<p>Make fresh juice on the go.</p>", relatedProductIds: []},
+            "watch-t55": { id: "watch-t55", name: "T55 Smart Watch with Extra Strap", price: 800, images: ["https://i.ibb.co/Fkykf1b7/17566804095763107127774030891362.jpg"], sizes: ["N/A"], descriptionHTML: "<p>Smart watch with multiple features and an extra strap.</p>", relatedProductIds: ["watch-olevs", "watch-stylish"]},
+            "shirt-shylooks": { id: "shirt-shylooks", name: "Shy Looks Pure Cotton Shirt", price: 600, images: ["https://i.ibb.co/hx9JxH5x/17566805209395370241657698688847.jpg"], sizes: ["M", "L", "XL"], descriptionHTML: "<p>A comfortable and stylish pure cotton shirt.</p>", relatedProductIds: ["tshirt-combo", "tshirt-combo-2"]},
+            "baby-combo": { id: "baby-combo", name: "Baby Combo Set T-shirt", price: 400, images: ["https://i.ibb.co/0VsNpLvX/17566805303363714943644632985074.png"], sizes: ["1-2Y", "2-3Y"], descriptionHTML: "<p>Cute and comfortable t-shirt set for babies.</p>", relatedProductIds: []},
+            "keyring-square": { id: "keyring-square", name: "Wooden Key Ring (Square)", price: 140, images: ["https://i.ibb.co/b5pJjCP6/1756680540427124932813388437475.jpg"], sizes: ["N/A"], descriptionHTML: "<p>A stylish wooden key ring.</p>", relatedProductIds: ["keyring-rect"]},
+            "keyring-rect": { id: "keyring-rect", name: "Wooden Key Ring (Rectangle)", price: 120, images: ["https://i.ibb.co/Df3hqyV6/17566805515667876427636536104807.jpg"], sizes: ["N/A"], descriptionHTML: "<p>A stylish wooden key ring.</p>", relatedProductIds: ["keyring-square"]}
+        };
+        
+        // --- APP STATE ---
+        let currentProductId = null;
+        let selectedSize = null;
+        let checkoutOrder = {}; 
+        let cart = JSON.parse(localStorage.getItem('theArafatCart')) || { items: [] };
+        let dashboardInterval = null; // For real-time updates on dashboard
+        let currentCaptcha = ''; // For password reset
+
+        // --- DOM ELEMENTS ---
+        const leftHeaderBtn = document.getElementById('left-header-btn');
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('backdrop');
+        const cartView = document.getElementById('cart-view');
+        const searchBtn = document.getElementById('search-btn');
+        const searchBar = document.getElementById('search-bar-container');
+        const searchInput = document.getElementById('search-input');
+        const slides = document.querySelectorAll('.slide');
+        const sliderNav = document.querySelector('.slider-nav');
+        let currentIndex = 0, slideInterval;
+        const scrollerIntervals = new Map();
+        
+        const allCategories = [ { name: 'Watches', img: 'https://i.ibb.co/4xSZw9p/sxlb-PR7rif-UVHQYcwq-Yf-VIp-Sl-Mg-N3-QU5-D8-SR0-YYl.png' }, { name: 'Electronics', img: 'https://i.ibb.co/0yChxrLT/f-ADk-ZQpdt-O4u-Fki-Wl-Ry-Lwc8-SBzbk-M3o471f-Welv-H.png' }, { name: 'Mobile Accessories', img: 'https://i.ibb.co/GvhLQd5j/n8-R1-Tsh-BHDWWu8w45-IVktv-RSq-ALHb-Ts-Sqv-DQANIx.webp' }, { name: 'T-Shirt', img: 'https://i.ibb.co/FbMtTMRT/s-ZWle-ZIfu1-LUAJ6zs-Ap-B2-WQsjl5o-YBs2-OFTy-A7u-H.webp' }, { name: 'Bag', img: 'https://i.ibb.co/tPmNmNr4/n7-Vf4i-Zuxd-At-GNOJF6t4-HM83a8qv-N3k6w-HZJ693n.png' }, { name: 'Content Tools', img: 'https://i.ibb.co/nsMQBKn6/B2al3-UNOdted-Tzx2-KFni-Uof-X7c-IDHAHWUo-Zb-S5f-S.png' }, { name: 'Health & Beauty', img: 'https://i.ibb.co/bRMCh6c4/9-Hv-YPAIRMv1t-KJp-IRao-Kaikx-B2-XR4-Tfuj3-Q7k-Fu-P.png' }, { name: 'Bed Sheet', img: 'https://i.ibb.co/7NyWNzkX/frh-Xp-Yyr-CSp-R6uu-W1-ZU9-UIaz-Dl-Eu-OTl-Zlf-I5g-D4-L.png' }, { name: 'Shirts', img: 'https://i.ibb.co/60wH1Kh7/7-XZfu6p592x-Jc-Peiy-Ljs-Gz-Jx2f-ZWds-T9a7l-ZJpdn.png' }, { name: 'Shaver & Trimmer', img: 'https://i.ibb.co/Zz6M4HbL/k2-Rb-Zj-Hi-Nh-PBos-QT9e-Hj-O2-YNEwbm-Ro-UA2-NG6-ZOAg.png'}, { name: 'Speaker', img: 'https://i.ibb.co/rDkxdcc/J2qfe-LChg-G7ory0ad8gk-RUtcu-Y101y-OJipr8-Il1-O.png'}, { name: 'Ketchen & Dining', img: 'https://i.ibb.co/B2B1m24p/d-Srpp-HLhf3-Bef1-Yg7s-QAg-Bzn-Yl-XEc-Fpjvr-JSHpww.webp' }, { name: 'Home Appliance', img: 'https://i.ibb.co/SDQHzwbb/h-Nxn9x71o-Yytyal0lyq-NKHIe-Czkq0wj2b-Nw-Vmo-QD.png' }, { name: 'Islamic Corner', img: 'https://i.ibb.co/vCcbXvHc/I38z-Lh9441-NOJLLn-KPg-QUqr9kk7-Ler-JYQ5m42tu-G.png' }, { name: 'Salwar-Kameez', img: 'https://i.ibb.co/FbMtTMRT/s-ZWle-ZIfu1-LUAJ6zs-Ap-B2-WQsjl5o-YBs2-OFTy-A7u-H.webp' }, { name: 'Fan Item', img: 'https://i.ibb.co/SDQHzwbb/h-Nxn9x71o-Yytyal0lyq-NKHIe-Czkq0wj2b-Nw-Vmo-QD.png' } ];
+        const genericModal = document.getElementById('generic-modal');
+
+        // --- CORE FUNCTIONS ---
+        function updateHeader(pageId) { 
+            const homeAndCategoryPages = ['home-page', 'all-categories-page', 'category-products-page', 'product-list-page'];
+            const authPages = ['login-page', 'register-page'];
+            const dashboardSubPages = ['profile-details-page', 'edit-profile-page', 'change-password-page'];
+
+            searchBtn.style.display = 'block';
+
+            leftHeaderBtn.innerHTML = (pageId === 'home-page') ? `<i class="fas fa-bars"></i>` : `<i class="fas fa-arrow-left"></i>`; 
+            
+            if (pageId === 'home-page') { 
+                leftHeaderBtn.onclick = openSidebar; 
+            } else if (dashboardSubPages.includes(pageId)) {
+                leftHeaderBtn.onclick = () => showPage('dashboard-page');
+            } else if (pageId === 'forget-password-page') {
+                leftHeaderBtn.onclick = () => showPage('login-page');
+            } else if (pageId === 'dashboard-page' || authPages.includes(pageId) || pageId === 'payment-page' || pageId === 'confirmation-page' || pageId === 'order-tracking-page') {
+                leftHeaderBtn.onclick = () => showPage('home-page');
+            } else if (pageId === 'checkout-page' && checkoutOrder.source === 'cart') {
+                 leftHeaderBtn.onclick = openCart;
+            } else { 
+                leftHeaderBtn.onclick = () => showPage('home-page'); 
+            }
+        }
+        
+        function showPage(pageId, pageData = {}) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) targetPage.classList.add('active');
+            
+            document.querySelectorAll('.footer-nav .nav-item').forEach(item => {
+                const itemPage = item.dataset.page;
+                let isActive = (itemPage === pageId);
+                if (['dashboard-page', 'profile-details-page', 'edit-profile-page', 'change-password-page', 'forget-password-page'].includes(pageId) && itemPage === 'login-page') {
+                    isActive = true;
+                }
+                item.classList.toggle('active', isActive);
+            });
+
+            updateHeader(pageId); 
+            closeSidebar(); 
+            closeCart(); 
+            window.scrollTo(0, 0); 
+            
+            clearInterval(dashboardInterval);
+            if (pageId === 'dashboard-page') {
+                loadDashboardOrders();
+                dashboardInterval = setInterval(loadDashboardOrders, 30000);
+            }
+        }
+
+        function createCategoryItem(category) { const link = document.createElement('a'); link.className = 'category-item-link'; link.href = '#'; link.dataset.category = category.name; link.innerHTML = `<div class="category-item"><img src="${category.img}" alt="${category.name}"><span>${category.name}</span></div>`; link.addEventListener('click', function(e){ e.preventDefault(); showCategoryProducts(this.dataset.category); }); return link; }
+        function loadCategories() { const homeGrid = document.getElementById('home-categories-grid'); const allGrid = document.getElementById('all-categories-grid'); allCategories.slice(0, 8).forEach(cat => homeGrid.appendChild(createCategoryItem(cat))); allCategories.forEach(cat => allGrid.appendChild(createCategoryItem(cat))); }
+        function openSidebar() { sidebar.classList.add('open'); backdrop.classList.add('visible'); }
+        function closeSidebar() { sidebar.classList.remove('open'); if(!cartView.classList.contains('open') && !genericModal.classList.contains('visible')) backdrop.classList.remove('visible'); }
+        
+        // --- SLIDER & SCROLLER ---
+        function setupSlider() { if (!slides.length) return; slides.forEach((_, i) => { const dot = document.createElement('div'); dot.className = 'dot'; dot.addEventListener('click', () => { goToSlide(i); resetInterval(); }); sliderNav.appendChild(dot); }); goToSlide(0); startInterval(); }
+        function goToSlide(index) { slides.forEach((s, i) => s.classList.toggle('active', i === index)); sliderNav.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === index)); currentIndex = index; }
+        function startInterval() { slideInterval = setInterval(() => goToSlide((currentIndex + 1) % slides.length), 3000); }
+        function resetInterval() { clearInterval(slideInterval); startInterval(); }
+        function setupAutoScroller(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const startAutoScroll = () => { const interval = setInterval(() => { const scrollAmount = container.querySelector('.horizontal-scroller-item')?.offsetWidth + 12 || 200; container.scrollLeft + container.clientWidth >= container.scrollWidth - 10 ? container.scrollTo({ left: 0, behavior: 'smooth' }) : container.scrollBy({ left: scrollAmount, behavior: 'smooth' }); }, 3000); scrollerIntervals.set(containerId, interval); };
+            const stopAutoScroll = () => clearInterval(scrollerIntervals.get(containerId));
+            startAutoScroll();
+            container.addEventListener('mouseenter', stopAutoScroll); container.addEventListener('mouseleave', startAutoScroll); container.addEventListener('touchstart', stopAutoScroll, { passive: true }); container.addEventListener('touchend', startAutoScroll);
+        }
+
+        // --- CART LOGIC ---
+        function saveCart() { localStorage.setItem('theArafatCart', JSON.stringify(cart)); }
+        function updateCart() {
+            cart.subtotal = cart.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+            const totalItems = cart.items.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-counter').textContent = totalItems;
+            document.getElementById('cart-counter').style.display = totalItems > 0 ? 'flex' : 'none';
+            document.getElementById('cart-footer-subtotal').textContent = `${cart.subtotal.toFixed(2)} TK`;
+            saveCart();
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+            if (cart.items.length === 0) {
+                container.innerHTML = '<p class="cart-empty-msg">Your cart is empty.</p>';
+            } else {
+                cart.items.forEach((item, index) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'cart-item';
+                    itemEl.innerHTML = `<img src="${item.image}" alt="${item.name}" class="cart-item-image"><div class="cart-item-details"><p>${item.name}</p>${item.size !== 'N/A' ? `<p class="cart-item-size">Size: ${item.size}</p>` : ''}<div class="cart-item-actions"><div class="cart-item-qty"><button class="qty-btn cart-qty-minus" data-index="${index}">-</button><span>${item.quantity}</span><button class="qty-btn cart-qty-plus" data-index="${index}">+</button></div><p class="cart-item-price">${(item.price * item.quantity).toFixed(2)} TK</p></div></div><i class="fas fa-trash-alt cart-item-delete" data-index="${index}"></i>`;
+                    container.appendChild(itemEl);
+                });
+            }
+        }
+
+        function updateCartItemQuantity(index, change) { const item = cart.items[index]; if (item) { item.quantity += change; if (item.quantity <= 0) cart.items.splice(index, 1); updateCart(); renderCartItems(); } }
+        function removeCartItem(index) { cart.items.splice(index, 1); updateCart(); renderCartItems(); }
+        function openCart() { renderCartItems(); cartView.classList.add('open'); backdrop.classList.add('visible'); }
+        function closeCart() { cartView.classList.remove('open'); if(!sidebar.classList.contains('open') && !genericModal.classList.contains('visible')) backdrop.classList.remove('visible'); }
+        
+        // --- PRODUCT & CATEGORY PAGES ---
+        function populateProductDetails(productId) {
+            const product = products[productId];
+            if (!product) return;
+            currentProductId = productId;
+            selectedSize = null;
+            document.querySelector('#product-details-page .pdp-main-image').src = product.images[0];
+            document.querySelector('#product-details-page .pdp-title').textContent = product.name;
+            document.querySelector('#product-details-page .pdp-breadcrumbs').textContent = product.breadcrumbs || '';
+            document.querySelector('#product-details-page .pdp-code').textContent = product.code ? `Code: ${product.code}` : '';
+            document.querySelector('#product-details-page .pdp-price').textContent = `${product.price} TK`;
+            const thumbnailsContainer = document.querySelector('#product-details-page .pdp-thumbnails');
+            thumbnailsContainer.innerHTML = '';
+            product.images.forEach((imgSrc, index) => { const img = document.createElement('img'); img.src = imgSrc; img.alt = `Thumbnail ${index + 1}`; if (index === 0) img.classList.add('active'); img.addEventListener('click', () => { document.querySelector('.pdp-main-image').src = imgSrc; thumbnailsContainer.querySelectorAll('img').forEach(i => i.classList.remove('active')); img.classList.add('active'); }); thumbnailsContainer.appendChild(img); });
+            const sizesContainer = document.querySelector('#product-details-page .pdp-sizes');
+            sizesContainer.innerHTML = '';
+            if (product.sizes && product.sizes.length > 0) {
+                product.sizes.forEach(size => { const btn = document.createElement('button'); btn.textContent = size; btn.dataset.size = size; btn.addEventListener('click', () => { sizesContainer.querySelectorAll('button').forEach(b => b.classList.remove('active')); btn.classList.add('active'); selectedSize = size; }); sizesContainer.appendChild(btn); });
+                sizesContainer.parentElement.style.display = 'block';
+            } else {
+                 sizesContainer.parentElement.style.display = 'none';
+            }
+            document.getElementById('pdp-qty-value').textContent = '1';
+            document.getElementById('description-content').innerHTML = product.descriptionHTML || '<p>No description available.</p>';
+            const relatedContainer = document.getElementById('related-products-container');
+            relatedContainer.innerHTML = '';
+            if(product.relatedProductIds && product.relatedProductIds.length > 0) {
+                 product.relatedProductIds.forEach(relatedId => { const relatedProduct = products[relatedId]; if (relatedProduct) { const card = document.createElement('div'); card.className = 'product-card'; card.innerHTML = `<img src="${relatedProduct.images[0]}" alt="${relatedProduct.name}"><div class="product-info"><h3>${relatedProduct.name}</h3><p class="product-price">${relatedProduct.price} TK</p><button class="order-btn" data-product-id="${relatedId}">Order Now</button></div>`; relatedContainer.appendChild(card); } });
+            } else { relatedContainer.innerHTML = '<p style="text-align: center; grid-column: 1 / -1;">No related products found.</p>'; }
+            showPage('product-details-page');
+        }
+
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.dataset.productId = product.id;
+            card.innerHTML = `<img src="${product.images[0]}" alt="${product.name}"><div class="product-info"><h3>${product.name}</h3><p class="product-price">${product.price} TK</p><button class="order-btn">Order Now</button></div>`;
+            return card;
+        }
+
+        function showCategoryProducts(categoryName) {
+            const grid = document.getElementById('category-products-grid');
+            grid.innerHTML = '';
+            document.getElementById('category-products-title').textContent = categoryName;
+            const allProductIds = Object.keys(products);
+            for (let i = allProductIds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [allProductIds[i], allProductIds[j]] = [allProductIds[j], allProductIds[i]]; }
+            const randomProductIds = allProductIds.slice(0, Math.min(8, allProductIds.length));
+            randomProductIds.forEach(productId => grid.appendChild(createProductCard(products[productId])));
+            showPage('category-products-page');
+        }
+
+        function showProductList(sectionId, title) {
+            const grid = document.getElementById('product-list-grid');
+            grid.innerHTML = '';
+            document.getElementById('product-list-title').textContent = title;
+            if (sectionId.startsWith('dynamic-category-')) {
+                 const allProductIds = Object.keys(products);
+                 for (let i = allProductIds.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[allProductIds[i], allProductIds[j]] = [allProductIds[j], allProductIds[i]]; }
+                 const randomProductIds = allProductIds.slice(0, Math.min(12, allProductIds.length));
+                 randomProductIds.forEach(productId => grid.appendChild(createProductCard(products[productId])));
+            } else {
+                const productCards = document.querySelectorAll(`#${sectionId} .product-card`);
+                productCards.forEach(card => {
+                    const productId = card.dataset.productId;
+                    if (productId && products[productId]) {
+                        grid.appendChild(createProductCard(products[productId]));
+                    }
+                });
+            }
+            showPage('product-list-page');
+        }
+
+        // --- CHECKOUT & PAYMENT FLOW ---
+        function updateCheckoutTotals() {
+            const subtotal = checkoutOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = parseInt(document.querySelector('input[name="delivery-area"]:checked').value);
+            const discount = parseFloat(document.getElementById('coupon-code').dataset.discount || 0);
+            const payable = subtotal + shipping - discount;
+            checkoutOrder.subtotal = subtotal;
+            checkoutOrder.shipping = shipping;
+            checkoutOrder.discount = discount;
+            checkoutOrder.total = payable;
+            document.getElementById('checkout-subtotal').textContent = `${subtotal.toFixed(2)} TK`;
+            document.getElementById('checkout-shipping').textContent = `${shipping} TK`;
+            document.getElementById('checkout-discount').textContent = `${discount.toFixed(2)} TK`;
+            document.getElementById('checkout-payable').textContent = `${payable.toFixed(2)} TK`;
+        }
+        
+        function populateCheckoutPage() {
+            const listContainer = document.getElementById('checkout-product-list');
+            listContainer.innerHTML = '';
+            checkoutOrder.items.forEach((item, index) => {
+                 const itemEl = document.createElement('div');
+                 itemEl.className = 'checkout-product-list-item';
+                 itemEl.innerHTML = `<img src="${item.image}" alt="${item.name}"><div class="checkout-product-info"><p>${item.name}</p>${item.size !== 'N/A' ? `<p>Size: ${item.size}</p>` : ''}</div><div class="checkout-qty"><button class="qty-btn checkout-qty-minus" data-index="${index}">-</button><span>${item.quantity}</span><button class="qty-btn checkout-qty-plus" data-index="${index}">+</button></div>`;
+                 listContainer.appendChild(itemEl);
+            });
+            document.getElementById('coupon-code').value = '';
+            document.getElementById('coupon-code').dataset.discount = "0";
+            updateCheckoutTotals();
+        }
+
+        function updateCheckoutItemQuantity(index, change) {
+            const item = checkoutOrder.items[index];
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) checkoutOrder.items.splice(index, 1);
+                if (checkoutOrder.items.length === 0) { showPage('home-page'); return; }
+                populateCheckoutPage();
+            }
+        }
+        
+        function saveOrder() {
+            const userMobile = sessionStorage.getItem('loggedInUser');
+            const ordersKey = userMobile ? `orders_${userMobile}` : 'guest_orders';
+            const userOrders = JSON.parse(localStorage.getItem(ordersKey)) || [];
+            
+            const newOrder = {
+                invoice: `11${Math.floor(10000 + Math.random() * 90000)}`,
+                date: new Date().toISOString(),
+                status: 'Pending',
+                discount: checkoutOrder.discount,
+                subtotal: checkoutOrder.subtotal,
+                shipping: checkoutOrder.shipping,
+                total: checkoutOrder.total,
+                items: checkoutOrder.items,
+                customer: checkoutOrder.customer
+            };
+            userOrders.push(newOrder);
+            localStorage.setItem(ordersKey, JSON.stringify(userOrders));
+            return newOrder;
+        }
+
+        function showConfirmationPage(order) {
+            document.getElementById('conf-order-number').textContent = order.invoice;
+            document.getElementById('conf-order-date').textContent = new Date(order.date).toLocaleString('en-GB');
+            document.getElementById('conf-order-total').textContent = `${order.total.toFixed(2)} TK`;
+            showPage('confirmation-page');
+        }
+
+        // --- AUTH & DASHBOARD ---
+
+        // START: Password Reset Functions
+        function generateCaptcha() {
+            const chars = '0123456789';
+            let captcha = '';
+            for (let i = 0; i < 4; i++) {
+                captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            currentCaptcha = captcha;
+            const captchaDisplay = document.getElementById('captcha-display');
+            if (captchaDisplay) {
+                captchaDisplay.textContent = currentCaptcha;
+            }
+        }
+
+        function handlePasswordReset() {
+            const countryCode = document.getElementById('reset-country-code').value;
+            const mobile = document.getElementById('reset-mobile-no').value.trim();
+            const captchaInput = document.getElementById('reset-captcha-input').value.trim();
+            const newPassword = document.getElementById('reset-new-password').value.trim();
+
+            if (!mobile || !captchaInput || !newPassword) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            const fullMobile = countryCode + mobile;
+            const userData = JSON.parse(localStorage.getItem(fullMobile));
+
+            if (!userData) {
+                alert('No account found with this mobile number.');
+                generateCaptcha();
+                return;
+            }
+
+            if (captchaInput.toLowerCase() !== currentCaptcha.toLowerCase()) {
+                alert('The entered code is incorrect. Please try again.');
+                generateCaptcha();
+                document.getElementById('reset-captcha-input').value = '';
+                return;
+            }
+
+            // All checks passed, update password
+            userData.password = newPassword;
+            localStorage.setItem(fullMobile, JSON.stringify(userData));
+
+            alert('Your password has been reset successfully. Please login with your new password.');
+            document.getElementById('forget-password-page').querySelector('form').reset();
+            showPage('login-page');
+        }
+        // END: Password Reset Functions
+
+        function checkLoginStatus() {
+            const loggedInUserMobile = sessionStorage.getItem('loggedInUser');
+            const authNavLink = document.getElementById('auth-nav-link');
+            const dashboardProfilePic = document.getElementById('dashboard-profile-pic');
+            const placeholderPic = document.querySelector('.profile-pic-placeholder');
+
+            if (loggedInUserMobile) {
+                const userData = JSON.parse(localStorage.getItem(loggedInUserMobile));
+                const shortName = userData.name.split(' ')[0];
+                authNavLink.innerHTML = `<i class="fas fa-user"></i><span>${shortName}</span>`;
+                authNavLink.dataset.page = 'dashboard-page';
+                document.getElementById('dashboard-user-name').textContent = userData.name;
+                
+                if (userData.profilePic) {
+                    dashboardProfilePic.src = userData.profilePic;
+                    dashboardProfilePic.style.display = 'inline-flex';
+                    placeholderPic.style.display = 'none';
+                } else {
+                    dashboardProfilePic.style.display = 'none';
+                    placeholderPic.style.display = 'inline-flex';
+                }
+            } else {
+                authNavLink.innerHTML = `<i class="fas fa-user"></i><span>Login</span>`;
+                authNavLink.dataset.page = 'login-page';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('loggedInUser');
+            checkLoginStatus();
+            showPage('home-page');
+        }
+
+        function loadDashboardOrders() {
+            const userMobile = sessionStorage.getItem('loggedInUser');
+            const tbody = document.getElementById('dashboard-orders-tbody');
+            const noOrderMsg = document.getElementById('no-order-msg');
+            tbody.innerHTML = '';
+        
+            if (!userMobile) {
+                noOrderMsg.style.display = 'block';
+                return;
+            }
+        
+            const ordersKey = `orders_${userMobile}`;
+            let userOrders = JSON.parse(localStorage.getItem(ordersKey)) || [];
+            let ordersModified = false;
+        
+            userOrders.forEach(order => {
+                const timeDiffMinutes = (new Date() - new Date(order.date)) / (1000 * 60);
+                if (order.status === 'Pending' && timeDiffMinutes > 10) {
+                    order.status = 'Success';
+                    ordersModified = true;
+                }
+            });
+        
+            if (ordersModified) {
+                localStorage.setItem(ordersKey, JSON.stringify(userOrders));
+            }
+        
+            if (userOrders.length === 0) {
+                noOrderMsg.style.display = 'block';
+            } else {
+                noOrderMsg.style.display = 'none';
+                userOrders.slice().reverse().forEach((order, index) => {
+                    const timeDiffMinutes = (new Date() - new Date(order.date)) / (1000 * 60);
+                    
+                    let actionsHTML = `<button class="action-btn-icon view-order-btn" data-invoice="${order.invoice}"><i class="fas fa-eye"></i></button>`;
+                    
+                    if (order.status === 'Pending' && timeDiffMinutes <= 10) {
+                        actionsHTML += ` <button class="action-btn-cancel" data-invoice="${order.invoice}">Cancel</button>`;
+                    }
+        
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${userOrders.length - index}</td>
+                        <td>${order.invoice}</td>
+                        <td>${new Date(order.date).toLocaleDateString('en-CA')}</td>
+                        <td><span class="status ${order.status.toLowerCase()}">${order.status}</span></td>
+                        <td><span class="discount">${order.discount ? order.discount.toFixed(0) : 0}</span></td>
+                        <td>${order.total.toFixed(2)} TK</td>
+                        <td class="actions-cell">
+                            ${actionsHTML}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+        
+        function showOrderDetailsModal(invoice) {
+            const userMobile = sessionStorage.getItem('loggedInUser');
+            if (!userMobile) return;
+            const ordersKey = `orders_${userMobile}`;
+            const userOrders = JSON.parse(localStorage.getItem(ordersKey)) || [];
+            const order = userOrders.find(o => o.invoice === invoice);
+        
+            if (order) {
+                document.getElementById('modal-title').textContent = `Order Details: #${order.invoice}`;
+                let productsHTML = '';
+                order.items.forEach(item => {
+                    productsHTML += `
+                        <div class="order-details-modal-item">
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="info">
+                                <b>${item.name}</b>
+                                ${item.size !== 'N/A' ? `<div class="size">Size: ${item.size}</div>` : ''}
+                            </div>
+                            <div class="price-qty">
+                                <div>${item.price.toFixed(2)} TK</div>
+                                <div>x ${item.quantity}</div>
+                            </div>
+                        </div>`;
+                });
+        
+                document.getElementById('modal-body').innerHTML = `
+                    <p><b>Date:</b> ${new Date(order.date).toLocaleString('en-GB')}</p>
+                    <p><b>Status:</b> <span class="status ${order.status.toLowerCase()}">${order.status}</span></p>
+                    <p><b>Customer:</b> ${order.customer.name}</p>
+                    <p><b>Address:</b> ${order.customer.address}</p>
+                    <hr style="margin: 10px 0;">
+                    <div id="order-details-modal-products">${productsHTML}</div>
+                    <hr style="margin: 10px 0;">
+                    <div style="text-align: right;">
+                        <p><b>Subtotal:</b> ${order.subtotal.toFixed(2)} TK</p>
+                        <p><b>Shipping:</b> ${order.shipping.toFixed(2)} TK</p>
+                        <p><b>Discount:</b> -${order.discount.toFixed(2)} TK</p>
+                        <h3 style="margin-top: 5px;"><b>Total:</b> ${order.total.toFixed(2)} TK</h3>
+                    </div>
+                `;
+                genericModal.classList.add('visible');
+                backdrop.classList.add('visible');
+            }
+        }
+        
+        // --- NEW: Populate Country Codes ---
+        function populateCountryCodeDropdowns() {
+            const selectors = [
+                document.getElementById('register-country-code'),
+                document.getElementById('login-country-code'),
+                document.getElementById('edit-profile-country-code'),
+                document.getElementById('reset-country-code')
+            ];
+            selectors.forEach(selector => {
+                if(selector) {
+                    selector.innerHTML = '';
+                    countryCodes.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country.code;
+                        option.textContent = `${country.name} (${country.code})`;
+                        if (country.code === '+880') {
+                            option.selected = true;
+                        }
+                        selector.appendChild(option);
+                    });
+                }
+            });
+        }
+
+
+        function populateProfilePage() {
+            const loggedInUserMobile = sessionStorage.getItem('loggedInUser');
+            if (loggedInUserMobile) {
+                const userData = JSON.parse(localStorage.getItem(loggedInUserMobile));
+                document.getElementById('profile-details-name').textContent = userData.name;
+                document.getElementById('profile-details-email').textContent = userData.email || 'N/A';
+                document.getElementById('profile-details-phone').textContent = loggedInUserMobile;
+                document.getElementById('profile-details-address').textContent = (userData.address && userData.city) ? `${userData.address}, ${userData.city}` : (userData.address || 'N/A');
+            }
+        }
+        
+        function populateEditProfilePage() {
+            const loggedInUserMobile = sessionStorage.getItem('loggedInUser');
+            if (loggedInUserMobile) {
+                const userData = JSON.parse(localStorage.getItem(loggedInUserMobile));
+                document.getElementById('edit-profile-name').value = userData.name || '';
+                document.getElementById('edit-profile-email').value = userData.email || '';
+                
+                // Find the separator for country code and number
+                let countryCode = '+880'; // Default
+                let numberPart = loggedInUserMobile;
+                
+                const matchedCountry = countryCodes.slice().sort((a,b) => b.code.length - a.code.length).find(c => loggedInUserMobile.startsWith(c.code));
+                if(matchedCountry) {
+                    countryCode = matchedCountry.code;
+                    numberPart = loggedInUserMobile.substring(countryCode.length);
+                }
+
+                document.getElementById('edit-profile-country-code').value = countryCode;
+                document.getElementById('edit-profile-phone').value = numberPart;
+
+                document.getElementById('edit-profile-city').value = userData.city || '';
+                document.getElementById('edit-profile-address').value = userData.address || '';
+            }
+        }
+        
+        // <!-- NEW/MODIFIED START: Modal Logic updated to handle dynamic content -->
+        const infoContent = {
+            'about-us': { title: 'About Us', content: '' },
+            'privacy-policy': { title: 'Privacy Policy', content: '' },
+            'terms-conditions': { title: 'Terms and Conditions', content: '' }
+        };
+
+        function showInfoModal(type) {
+            const defaultData = infoContent[type];
+            const dynamicData = window.dynamicInfoContent ? window.dynamicInfoContent[type] : defaultData;
+            
+            const dataToDisplay = {
+                title: dynamicData.title || defaultData.title,
+                content: dynamicData.content || defaultData.content
+            };
+            
+            if (dataToDisplay) {
+                document.getElementById('modal-title').textContent = dataToDisplay.title;
+                document.getElementById('modal-body').innerHTML = dataToDisplay.content;
+                genericModal.classList.add('visible');
+                backdrop.classList.add('visible');
+            }
+        }
+        // <!-- NEW/MODIFIED END -->
+        
+        function closeModal() {
+            genericModal.classList.remove('visible');
+            if(!sidebar.classList.contains('open') && !cartView.classList.contains('open')) {
+                backdrop.classList.remove('visible');
+            }
+        }
+        
+        // --- INITIAL BINDINGS ---
+        function bindInitialEvents() {
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => { link.addEventListener('click', e => { e.preventDefault(); showPage(link.dataset.page); }); });
+            document.getElementById('auth-nav-link').addEventListener('click', e => { e.preventDefault(); showPage(e.currentTarget.dataset.page); });
+            document.querySelectorAll('.view-all-btn[data-section]').forEach(btn => btn.addEventListener('click', e => { const sectionId = e.target.dataset.section; const title = e.target.parentElement.querySelector('h2').textContent; showProductList(sectionId, title); }));
+            document.body.addEventListener('click', e => { if (e.target.closest('.product-card .order-btn') || e.target.closest('.product-card img')) { const card = e.target.closest('.product-card'); if (card && card.dataset.productId) { populateProductDetails(card.dataset.productId); } } });
+
+            // Sidebar & Cart
+            document.getElementById('close-btn').addEventListener('click', closeSidebar);
+            document.querySelector('.cart-close-btn').addEventListener('click', closeCart);
+            backdrop.addEventListener('click', () => { closeSidebar(); closeCart(); closeModal(); });
+            document.querySelectorAll('.accordion-btn').forEach(acc => { acc.addEventListener('click', function() { this.classList.toggle('active'); this.nextElementSibling.classList.toggle('open'); }); });
+            document.querySelectorAll('.sidebar-menu .category-link').forEach(link => { link.addEventListener('click', e => { e.preventDefault(); showCategoryProducts(e.target.textContent); }); });
+            document.getElementById('cart-btn').addEventListener('click', e => { e.preventDefault(); openCart(); });
+            document.getElementById('cart-items-container').addEventListener('click', e => { const index = e.target.dataset.index; if (e.target.classList.contains('cart-qty-plus')) updateCartItemQuantity(index, 1); if (e.target.classList.contains('cart-qty-minus')) updateCartItemQuantity(index, -1); if (e.target.classList.contains('cart-item-delete')) removeCartItem(index); });
+
+            // PDP
+            document.getElementById('pdp-qty-plus').addEventListener('click', () => { const qtyEl = document.getElementById('pdp-qty-value'); qtyEl.textContent = parseInt(qtyEl.textContent) + 1; });
+            document.getElementById('pdp-qty-minus').addEventListener('click', () => { const qtyEl = document.getElementById('pdp-qty-value'); let qty = parseInt(qtyEl.textContent); if (qty > 1) { qtyEl.textContent = qty - 1; } });
+            document.getElementById('pdp-add-to-cart-btn').addEventListener('click', () => {
+                const product = products[currentProductId];
+                if (product.sizes.length > 0 && !selectedSize) { alert("Please select a size."); return; }
+                const quantity = parseInt(document.getElementById('pdp-qty-value').textContent);
+                const existingItemIndex = cart.items.findIndex(item => item.id === currentProductId && item.size === selectedSize);
+                if (existingItemIndex > -1) { cart.items[existingItemIndex].quantity += quantity; } else { cart.items.push({ id: currentProductId, name: product.name, price: product.price, size: selectedSize || 'N/A', quantity: quantity, image: product.images[0] }); }
+                updateCart();
+                alert(`Added to cart!`);
+            });
+            document.querySelectorAll('#product-details-page .tab-btn').forEach(btn => { btn.addEventListener('click', function() { document.querySelectorAll('.pdp-tabs .tab-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.getElementById(`${this.dataset.tab}-content`).classList.add('active'); }); });
+            
+            // Order Flow
+            document.getElementById('pdp-order-now-btn').addEventListener('click', () => {
+                if (products[currentProductId].sizes.length > 0 && !selectedSize) { alert("Please select a size before ordering."); return; }
+                checkoutOrder = { items: [{ id: currentProductId, name: products[currentProductId].name, price: products[currentProductId].price, size: selectedSize || 'N/A', quantity: parseInt(document.getElementById('pdp-qty-value').textContent), image: products[currentProductId].images[0] }], source: 'pdp' };
+                populateCheckoutPage();
+                showPage('checkout-page');
+            });
+            document.getElementById('cart-place-order-btn').addEventListener('click', () => {
+                if (cart.items.length === 0) { alert("Your cart is empty."); return; }
+                checkoutOrder = { items: JSON.parse(JSON.stringify(cart.items)), source: 'cart' }; 
+                populateCheckoutPage();
+                showPage('checkout-page');
+            });
+            
+            // Checkout
+            document.querySelectorAll('input[name="delivery-area"]').forEach(radio => radio.addEventListener('change', updateCheckoutTotals));
+            document.getElementById('checkout-product-list').addEventListener('click', e => { const index = e.target.dataset.index; if (e.target.classList.contains('checkout-qty-plus')) updateCheckoutItemQuantity(index, 1); if (e.target.classList.contains('checkout-qty-minus')) updateCheckoutItemQuantity(index, -1); });
+            document.getElementById('apply-coupon-btn').addEventListener('click', () => {
+                const couponInput = document.getElementById('coupon-code');
+                if (couponInput.value.toUpperCase() === 'SAVE10') {
+                    couponInput.dataset.discount = (checkoutOrder.subtotal * 0.10).toFixed(2);
+                    alert("Coupon applied successfully!");
+                } else {
+                    couponInput.dataset.discount = "0";
+                    alert("Invalid coupon code.");
+                }
+                updateCheckoutTotals();
+            });
+            document.getElementById('order-submit-btn').addEventListener('click', () => {
+                const name = document.getElementById('checkout-name').value.trim();
+                const mobile = document.getElementById('checkout-mobile').value.trim();
+                const address = document.getElementById('checkout-address').value.trim();
+                if(!name || !mobile || !address) { alert("Please fill in all required fields."); return; }
+                checkoutOrder.customer = { name, mobile, address };
+                document.getElementById('payment-page-amount').textContent = `${checkoutOrder.shipping.toFixed(2)} TK`;
+                showPage('payment-page');
+            });
+
+            // Payment
+            document.getElementById('payment-methods-container').addEventListener('click', e => {
+                const method = e.target.closest('.method');
+                if (method) {
+                    document.querySelectorAll('#payment-methods-container .method').forEach(m => m.classList.remove('selected'));
+                    method.classList.add('selected');
+                    navigator.clipboard.writeText(method.dataset.number).then(() => alert('Number copied to clipboard!'));
+                }
+            });
+            document.getElementById('payment-confirm-btn').addEventListener('click', () => {
+                if (!document.getElementById('payment-number').value.trim() || !document.getElementById('payment-transaction-id').value.trim()) {
+                    alert("Please enter the Payment Number and Transaction ID."); return;
+                }
+                const savedOrder = saveOrder();
+                if (checkoutOrder.source === 'cart') { cart.items = []; updateCart(); }
+                document.getElementById('checkout-form').reset();
+                document.getElementById('payment-form').reset();
+                showConfirmationPage(savedOrder);
+            });
+
+            // Auth & Dashboard
+            document.getElementById('go-to-register-link').addEventListener('click', (e) => { e.preventDefault(); showPage('register-page'); });
+            document.getElementById('go-to-login-link').addEventListener('click', (e) => { e.preventDefault(); showPage('login-page'); });
+            document.getElementById('footer-register-link').addEventListener('click', (e) => { e.preventDefault(); showPage('register-page'); });
+            document.getElementById('footer-login-link').addEventListener('click', (e) => { e.preventDefault(); showPage('login-page'); });
+            document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+            document.getElementById('dashboard-profile-link').addEventListener('click', e => { e.preventDefault(); populateProfilePage(); showPage('profile-details-page'); });
+            document.getElementById('dashboard-edit-profile-link').addEventListener('click', e => { e.preventDefault(); populateEditProfilePage(); showPage('edit-profile-page'); });
+            document.getElementById('dashboard-change-password-link').addEventListener('click', e => { e.preventDefault(); showPage('change-password-page'); });
+            document.getElementById('dashboard-orders-link').addEventListener('click', e => { e.preventDefault(); document.querySelector('#dashboard-page .orders-section').scrollIntoView({ behavior: 'smooth' }); });
+            
+            document.getElementById('dashboard-orders-tbody').addEventListener('click', e => {
+                const target = e.target;
+                const cancelBtn = target.closest('.action-btn-cancel');
+                const viewBtn = target.closest('.view-order-btn');
+
+                if (cancelBtn) {
+                    const invoice = cancelBtn.dataset.invoice;
+                    if (confirm(`আপনি কি নিশ্চিতভাবে এই অর্ডারটি (${invoice}) বাতিল করতে চান?`)) {
+                        const userMobile = sessionStorage.getItem('loggedInUser');
+                        const ordersKey = `orders_${userMobile}`;
+                        let userOrders = JSON.parse(localStorage.getItem(ordersKey)) || [];
+                        const orderIndex = userOrders.findIndex(o => o.invoice === invoice);
+                        if (orderIndex > -1) {
+                            userOrders[orderIndex].status = 'Cancelled';
+                            localStorage.setItem(ordersKey, JSON.stringify(userOrders));
+                            loadDashboardOrders();
+                        }
+                    }
+                }
+                
+                if (viewBtn) {
+                    const invoice = viewBtn.dataset.invoice;
+                    showOrderDetailsModal(invoice);
+                }
+            });
+
+            // Profile Picture Edit
+            document.getElementById('profile-pic-edit-btn').addEventListener('click', () => {
+                document.getElementById('edit-profile-image').click();
+            });
+            document.getElementById('edit-profile-image').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const mobile = sessionStorage.getItem('loggedInUser');
+                        if (mobile) {
+                            const userData = JSON.parse(localStorage.getItem(mobile));
+                            userData.profilePic = e.target.result;
+                            localStorage.setItem(mobile, JSON.stringify(userData));
+                            alert('Profile picture updated! Please update the rest of your profile info to save.');
+                            document.getElementById('dashboard-profile-pic').src = e.target.result;
+                             document.getElementById('dashboard-profile-pic').style.display = 'inline-flex';
+                            document.querySelector('.profile-pic-placeholder').style.display = 'none';
+                             showPage('edit-profile-page');
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.getElementById('edit-profile-update-btn').addEventListener('click', () => {
+                const oldMobile = sessionStorage.getItem('loggedInUser');
+                if (!oldMobile) {
+                    alert('You are not logged in.');
+                    return;
+                }
+                // NOTE: Phone number change is disabled in this version
+                const name = document.getElementById('edit-profile-name').value.trim();
+                const email = document.getElementById('edit-profile-email').value.trim();
+                const city = document.getElementById('edit-profile-city').value;
+                const address = document.getElementById('edit-profile-address').value.trim();
+
+                if (!name) {
+                    alert('Name is required.');
+                    return;
+                }
+                
+                const userData = JSON.parse(localStorage.getItem(oldMobile));
+                if (!userData) {
+                     alert('Error: Could not find user data.');
+                     return;
+                }
+                userData.name = name;
+                userData.email = email;
+                userData.city = city;
+                userData.address = address;
+                
+                localStorage.setItem(oldMobile, JSON.stringify(userData));
+                
+                alert('Profile updated successfully!');
+                checkLoginStatus();
+                showPage('dashboard-page');
+            });
+
+            document.getElementById('change-password-save-btn').addEventListener('click', () => {
+                const newPass = document.getElementById('new-password').value;
+                if (newPass !== document.getElementById('confirm-password').value) { alert('Passwords do not match.'); return; }
+                if (!newPass) { alert('Password cannot be empty.'); return; }
+                const mobile = sessionStorage.getItem('loggedInUser');
+                if (mobile) {
+                    const userData = JSON.parse(localStorage.getItem(mobile));
+                    userData.password = newPass;
+                    localStorage.setItem(mobile, JSON.stringify(userData));
+                    alert('Password changed successfully!');
+                    showPage('dashboard-page');
+                }
+            });
+            
+            document.getElementById('register-btn').addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                const name = document.getElementById('register-name').value.trim(); 
+                const email = document.getElementById('register-email').value.trim(); 
+                const countryCode = document.getElementById('register-country-code').value;
+                const mobile = document.getElementById('register-mobile-no').value.trim(); 
+                const password = document.getElementById('register-password').value.trim(); 
+                if (!name || !mobile || !password) { alert('অনুগ্রহ করে সকল আবশ্যকীয় (*) ঘর পূরণ করুন।'); return; } 
+                if (!/^\d+$/.test(mobile)) { alert('অনুগ্রহ করে একটি সঠিক মোবাইল নম্বর দিন।'); return; }
+                const fullMobile = countryCode + mobile;
+                if (localStorage.getItem(fullMobile)) { alert('এই মোবাইল নম্বর দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট রয়েছে।'); return; } 
+                const userData = { name, email, password, address: '', city: '' }; 
+                localStorage.setItem(fullMobile, JSON.stringify(userData)); 
+                alert('রেজিস্ট্রেশন সফল হয়েছে! অনুগ্রহ করে লগইন করুন।'); 
+                showPage('login-page'); 
+                this.closest('form').reset(); 
+            });
+
+            document.getElementById('login-btn').addEventListener('click', function(e) {
+                e.preventDefault(); 
+                const countryCode = document.getElementById('login-country-code').value;
+                const mobile = document.getElementById('login-mobile-no').value.trim(); 
+                const password = document.getElementById('login-password').value.trim(); 
+                if (!mobile || !password) { alert('অনুগ্রহ করে মোবাইল নম্বর এবং পাসওয়ার্ড দিন।'); return; } 
+                const fullMobile = countryCode + mobile;
+                const userData = JSON.parse(localStorage.getItem(fullMobile)); 
+                if (userData && userData.password === password) { 
+                    sessionStorage.setItem('loggedInUser', fullMobile); 
+                    checkLoginStatus(); 
+                    showPage('home-page'); 
+                } else { 
+                    alert('আপনার দেওয়া মোবাইল বা পাসওয়ার্ডটি ভুল।'); 
+                } 
+            });
+
+            // START: New Event Listeners for Forget Password
+            document.getElementById('login-otp-btn').addEventListener('click', function() {
+                showPage('forget-password-page');
+                generateCaptcha(); // Generate first captcha when page is shown
+            });
+            document.getElementById('reset-password-btn').addEventListener('click', handlePasswordReset);
+            document.getElementById('captcha-refresh-btn').addEventListener('click', generateCaptcha);
+            document.getElementById('go-to-login-from-reset-link').addEventListener('click', (e) => { e.preventDefault(); showPage('login-page'); });
+            // END: New Event Listeners for Forget Password
+            
+            // Info links and Modal
+            document.querySelectorAll('.info-link').forEach(link => link.addEventListener('click', e => { e.preventDefault(); showInfoModal(e.target.dataset.info); }));
+            document.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+
+            // Order Tracking
+            document.getElementById('footer-order-tracking-link').addEventListener('click', e => { e.preventDefault(); showPage('order-tracking-page'); });
+            document.getElementById('track-order-btn').addEventListener('click', trackOrder);
+            
+            // Search
+            searchBtn.addEventListener('click', () => { searchBar.style.display = searchBar.style.display === 'block' ? 'none' : 'block'; if(searchBar.style.display === 'block') searchInput.focus(); });
+            searchInput.addEventListener('input', handleSearch);
+
+        }
+        
+        // --- Order Tracking ---
+        function trackOrder() {
+            const invoice = document.getElementById('tracking-invoice-no').value.trim();
+            const resultBox = document.getElementById('tracking-result-box');
+            if (!invoice) {
+                alert('Please enter an invoice number.');
+                return;
+            }
+
+            const userMobile = sessionStorage.getItem('loggedInUser');
+            if (!userMobile) {
+                resultBox.innerHTML = '<p class="no-order-msg">Please log in to track your orders.</p>';
+                resultBox.style.display = 'block';
+                return;
+            }
+
+            const ordersKey = `orders_${userMobile}`;
+            const userOrders = JSON.parse(localStorage.getItem(ordersKey)) || [];
+            const order = userOrders.find(o => o.invoice === invoice);
+
+            if (order) {
+                resultBox.innerHTML = `
+                    <h3>Order Status for #${order.invoice}</h3>
+                    <div class="info-row"><span class="info-label">Status:</span><span class="info-value"><span class="status ${order.status.toLowerCase()}">${order.status}</span></span></div>
+                    <div class="info-row"><span class="info-label">Date:</span><span class="info-value">${new Date(order.date).toLocaleDateString('en-CA')}</span></div>
+                    <div class="info-row"><span class="info-label">Total:</span><span class="info-value">${order.total.toFixed(2)} TK</span></div>
+                `;
+            } else {
+                resultBox.innerHTML = `<p class="no-order-msg">No order found with invoice number: ${invoice}</p>`;
+            }
+            resultBox.style.display = 'block';
+        }
+        
+        // --- Homepage Dynamic Categories ---
+        function loadHomepageCategories() {
+            const container = document.getElementById('homepage-dynamic-categories');
+            container.innerHTML = '';
+            
+            const categoriesToShow = [
+                "MEN'S FASHION", "WOMEN'S FASHION", "HOME & LIFESTYLE", 
+                "GADGETS & ELECTRONICS", "KIDS ZONE", "CUSTOMIZE & GIFT", 
+                "OFFER", "OTHER'S"
+            ];
+            
+            const allProductKeys = Object.keys(products);
+
+            categoriesToShow.forEach((categoryName, index) => {
+                const section = document.createElement('div');
+                const randomProducts = allProductKeys.sort(() => 0.5 - Math.random()).slice(0, 4);
+                let productsHTML = '';
+                randomProducts.forEach(key => {
+                    const p = products[key];
+                    productsHTML += `<div class="product-card horizontal-scroller-item" data-product-id="${p.id}"><img src="${p.images[0]}" alt="${p.name}"><div class="product-info"><h3>${p.name}</h3><p class="product-price">${p.price} TK</p><button class="order-btn">Order Now</button></div></div>`;
+                });
+                
+                const sectionId = `dynamic-category-${index}`;
+
+                section.innerHTML = `
+                    <div class="section-title">
+                        <h2>${categoryName}</h2>
+                        <a class="view-all-btn" data-section="${sectionId}" data-title="${categoryName}">View All</a>
+                    </div>
+                    <div class="horizontal-scroller-container" id="${sectionId}">
+                        <div class="horizontal-scroller-wrapper">
+                            ${productsHTML}
+                        </div>
+                    </div>`;
+                container.appendChild(section);
+
+                section.querySelector('.view-all-btn').addEventListener('click', e => {
+                    e.preventDefault();
+                    const target = e.currentTarget;
+                    showProductList(target.dataset.section, target.dataset.title);
+                });
+            });
+        }
+        
+        // --- Search Functionality ---
+        function handleSearch(event) {
+            const query = event.target.value.toLowerCase().trim();
+            const resultsGrid = document.getElementById('search-results-grid');
+            const resultsContainer = document.getElementById('search-results-container');
+            const homeSections = document.getElementById('home-page-sections');
+            
+            resultsGrid.innerHTML = '';
+
+            if (query.length > 0) {
+                homeSections.style.display = 'none';
+                resultsContainer.style.display = 'block';
+
+                const filteredProducts = Object.values(products).filter(product =>
+                    product.name.toLowerCase().includes(query)
+                );
+
+                if (filteredProducts.length > 0) {
+                    filteredProducts.forEach(product => {
+                        resultsGrid.appendChild(createProductCard(product));
+                    });
+                } else {
+                    resultsGrid.innerHTML = '<p>No products found.</p>';
+                }
+            } else {
+                homeSections.style.display = 'block';
+                resultsContainer.style.display = 'none';
+            }
+        }
+        
+        // --- Draggable Floating Icons (Performance Optimized) ---
+        function makeElementDraggable(elmnt, clickCallback) {
+            let isDragging = false;
+            let hasMoved = false;
+            
+            // The current translation of the element
+            let currentTranslateX = 0;
+            let currentTranslateY = 0;
+            
+            // The starting position of the cursor/touch
+            let startClientX = 0;
+            let startClientY = 0;
+            
+            // The translation of the element when the drag started
+            let initialTranslateX = 0;
+            let initialTranslateY = 0;
+
+            elmnt.addEventListener('mousedown', dragStart);
+            elmnt.addEventListener('touchstart', dragStart, { passive: false });
+
+            function dragStart(e) {
+                e.stopPropagation();
+                hasMoved = false;
+                isDragging = true;
+                
+                elmnt.style.cursor = 'grabbing';
+                elmnt.style.transition = 'none'; // Disable transition during drag for immediate feedback
+
+                if (e.type === 'touchstart') {
+                    startClientX = e.touches[0].clientX;
+                    startClientY = e.touches[0].clientY;
+                } else {
+                    e.preventDefault();
+                    startClientX = e.clientX;
+                    startClientY = e.clientY;
+                }
+
+                // Store the initial translation to calculate the new position based on the delta
+                initialTranslateX = currentTranslateX;
+                initialTranslateY = currentTranslateY;
+
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag, { passive: false });
+                document.addEventListener('mouseup', dragEnd);
+                document.addEventListener('touchend', dragEnd);
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+
+                // Prevent page scrolling on touch devices
+                if (e.type === 'touchmove') {
+                   e.preventDefault();
+                }
+
+                let currentClientX, currentClientY;
+                if (e.type === 'touchmove') {
+                    currentClientX = e.touches[0].clientX;
+                    currentClientY = e.touches[0].clientY;
+                } else {
+                    currentClientX = e.clientX;
+                    currentClientY = e.clientY;
+                }
+                
+                // Calculate how much the cursor has moved from the start
+                const dx = currentClientX - startClientX;
+                const dy = currentClientY - startClientY;
+                
+                // A small threshold to differentiate a click from a drag
+                if (!hasMoved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+                    hasMoved = true;
+                }
+
+                // Calculate the new translation for the element
+                currentTranslateX = initialTranslateX + dx;
+                currentTranslateY = initialTranslateY + dy;
+                
+                // Apply the new position using transform for performance
+                elmnt.style.transform = `translate3d(${currentTranslateX}px, ${currentTranslateY}px, 0)`;
+            }
+
+            function dragEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                elmnt.style.cursor = 'grab';
+
+                // --- Boundary Collision Check ---
+                // Get the element's current position and dimensions
+                const rect = elmnt.getBoundingClientRect();
+                
+                // Check if it's outside the viewport and calculate the necessary correction
+                let correctionX = 0;
+                let correctionY = 0;
+
+                if (rect.left < 0) {
+                    correctionX = -rect.left;
+                } else if (rect.right > window.innerWidth) {
+                    correctionX = window.innerWidth - rect.right;
+                }
+
+                if (rect.top < 0) {
+                    correctionY = -rect.top;
+                } else if (rect.bottom > window.innerHeight) {
+                    correctionY = window.innerHeight - rect.bottom;
+                }
+                
+                // If a correction is needed, update the translation
+                if (correctionX !== 0 || correctionY !== 0) {
+                    currentTranslateX += correctionX;
+                    currentTranslateY += correctionY;
+
+                    // Add a transition to make the snap-back effect smooth
+                    elmnt.style.transition = 'transform 0.2s ease-out';
+                    elmnt.style.transform = `translate3d(${currentTranslateX}px, ${currentTranslateY}px, 0)`;
+                } else {
+                     // Restore any default transition the element might have
+                    elmnt.style.transition = '';
+                }
+
+                // Clean up event listeners
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('touchmove', drag);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchend', dragEnd);
+            }
+            
+            // Differentiate between a click and a drag
+            elmnt.addEventListener('click', (e) => {
+                if (hasMoved) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                } else if (clickCallback) {
+                    clickCallback();
+                }
+            });
+        }
+        
+        // --- App Initialization ---
+        bindInitialEvents();
+        populateCountryCodeDropdowns();
+        loadCategories();
+        loadHomepageCategories();
+        setupSlider();
+        ['flash-sale-container', 'hot-selling-container', 'new-arrival-container', 'top-selling-container'].forEach(setupAutoScroller);
+        
+        // Apply draggable functionality
+        makeElementDraggable(document.getElementById('theme-toggle-btn'), () => {
+             const newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+             applyTheme(newTheme);
+        });
+        makeElementDraggable(document.getElementById('whatsapp-float'));
+
+
+        checkLoginStatus();
+        updateCart();
+        showPage('home-page');
+    });
+    </script>
+</body>
+</html>

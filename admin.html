@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Arafat Collection - Admin Panel</title>
+    <!-- Icon Library (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #008000; /* Green */
+            --secondary-color: #4a4a4a;
+            --background-color: #f4f7fa;
+            --sidebar-bg: #2c3e50;
+            --sidebar-text: #ecf0f1;
+            --sidebar-active-bg: #34495e;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-color: #e1e1e1;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background-color: var(--background-color); color: var(--text-color); }
+        body.sidebar-open-body { overflow: hidden; }
+        .admin-container { display: flex; width: 100%; min-height: 100vh; }
+        .sidebar { width: 250px; background-color: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100%; z-index: 1002; transform: translateX(-250px); transition: transform 0.3s ease-in-out; }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid var(--sidebar-active-bg); }
+        .sidebar-header h2 { font-size: 20px; }
+        .sidebar-nav { list-style: none; flex-grow: 1; margin-top: 10px; }
+        .sidebar-nav li a { display: flex; align-items: center; gap: 15px; padding: 15px 20px; color: var(--sidebar-text); text-decoration: none; transition: background-color 0.3s ease; font-size: 16px; }
+        .sidebar-nav li a:hover { background-color: var(--sidebar-active-bg); }
+        .sidebar-nav li a.active { background-color: var(--primary-color); font-weight: bold; }
+        .sidebar-nav li a i { width: 20px; text-align: center; }
+        .content-wrapper { flex-grow: 1; display: flex; flex-direction: column; width: 100%; transition: margin-left 0.3s ease-in-out; }
+        .main-header { display: flex; align-items: center; background-color: var(--card-bg); padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
+        .menu-toggle { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color); }
+        .header-title { font-size: 22px; font-weight: bold; margin-left: 15px; }
+        .main-content { padding: 25px; }
+        .view { display: none; }
+        .view.active { display: block; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        .page-header h1 { font-size: 28px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; color: white; transition: background-color 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: #006400; }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: #c0392b; }
+        .btn-secondary { background-color: var(--secondary-color); color: white; }
+        .card { background-color: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 25px; }
+        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .stat-card { background-color: var(--card-bg); padding: 25px; border-radius: 8px; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid; }
+        .stat-card.products { border-color: #3498db; }
+        .stat-card.categories { border-color: #9b59b6; }
+        .stat-card.orders { border-color: #f1c40f; }
+        .stat-card.users { border-color: #2ecc71; }
+        .stat-card i { font-size: 40px; color: var(--primary-color); opacity: 0.8; }
+        .stat-info h3 { font-size: 32px; font-weight: bold; }
+        .stat-info p { font-size: 16px; color: #777; }
+        .table-wrapper { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        .data-table th { background-color: #f9fafb; font-weight: bold; font-size: 14px; text-transform: uppercase; }
+        .data-table td { font-size: 15px; vertical-align: middle; }
+        .data-table img.product-image { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
+        .actions-cell button { margin-right: 8px; padding: 6px 10px; }
+        .status-select { padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); font-weight: bold; }
+        .status-select.pending { color: var(--warning-color); border-color: var(--warning-color); }
+        .status-select.shipped { color: #3498db; border-color: #3498db; }
+        .status-select.delivered { color: var(--success-color); border-color: var(--success-color); }
+        .status-select.cancelled { color: var(--danger-color); border-color: var(--danger-color); }
+        .category-tree ul { list-style-type: none; padding-left: 25px; }
+        .category-tree li { padding: 12px 8px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .category-tree li:last-child { border-bottom: none; }
+        .category-item-name { font-weight: 500; }
+        .category-item-actions button { font-size: 12px; padding: 5px 8px; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 1003; display: none; justify-content: center; align-items: center; }
+        .modal.visible { display: flex; }
+        .modal-content { background-color: var(--card-bg); border-radius: 8px; padding: 25px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .modal-header h2 { font-size: 22px; }
+        .modal-close-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: #888; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 15px; }
+        .form-group input:disabled { background-color: #f0f0f0; cursor: not-allowed; }
+        .form-group textarea { min-height: 150px; resize: vertical; }
+        .modal-footer { text-align: right; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; }
+        .modal-footer .btn { margin-left: 10px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; display: none; }
+        .overlay.visible { display: block; }
+        
+        @media (min-width: 769px) {
+            .sidebar { transform: translateX(0); }
+            .content-wrapper { margin-left: 250px; }
+            .menu-toggle { display: none; }
+        }
+        @media (max-width: 768px) {
+            .sidebar.open { transform: translateX(0); }
+            .main-content { padding: 15px; }
+            .page-header h1 { font-size: 24px; }
+            .dashboard-stats { grid-template-columns: 1fr; }
+            .modal-content { width: 95%; }
+            .page-header .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="admin-container">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h2 id="admin-app-name">Admin Panel</h2></div>
+            <ul class="sidebar-nav">
+                <li><a href="#" class="nav-link active" data-view="dashboard-view"><i class="fas fa-tachometer-alt"></i><span>ড্যাশবোর্ড</span></a></li>
+                <li><a href="#" class="nav-link" data-view="products-view"><i class="fas fa-box-open"></i><span>পণ্যসমূহ</span></a></li>
+                <li><a href="#" class="nav-link" data-view="categories-view"><i class="fas fa-tags"></i><span>বিভাগসমূহ</span></a></li>
+                <li><a href="#" class="nav-link" data-view="orders-view"><i class="fas fa-shopping-cart"></i><span>অর্ডারসমূহ</span></a></li>
+                <li><a href="#" class="nav-link" data-view="users-view"><i class="fas fa-users"></i><span>ব্যবহারকারী</span></a></li>
+                <li><a href="#" class="nav-link" data-view="settings-view"><i class="fas fa-cog"></i><span>অ্যাপ সেটিং</span></a></li>
+            </ul>
+        </nav>
+
+        <div class="content-wrapper" id="content-wrapper">
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                <h1 class="header-title" id="header-title">ড্যাশবোর্ড</h1>
+            </header>
+
+            <main class="main-content">
+                <div id="dashboard-view" class="view active">
+                    <div class="dashboard-stats">
+                        <div class="stat-card products"><i class="fas fa-box-open"></i><div class="stat-info"><h3 id="total-products-stat">0</h3><p>মোট পণ্য</p></div></div>
+                        <div class="stat-card categories"><i class="fas fa-tags"></i><div class="stat-info"><h3 id="total-categories-stat">0</h3><p>মোট বিভাগ</p></div></div>
+                        <div class="stat-card orders"><i class="fas fa-shopping-cart"></i><div class="stat-info"><h3 id="total-orders-stat">0</h3><p>মোট অর্ডার</p></div></div>
+                        <div class="stat-card users"><i class="fas fa-users"></i><div class="stat-info"><h3 id="total-users-stat">0</h3><p>মোট ব্যবহারকারী</p></div></div>
+                    </div>
+                </div>
+                <div id="products-view" class="view">
+                    <div class="page-header"><h1>পণ্য ব্যবস্থাপনা</h1><button class="btn btn-primary" id="add-product-btn"><i class="fas fa-plus"></i> নতুন পণ্য যোগ করুন</button></div>
+                    <div class="card"><div class="table-wrapper"><table class="data-table" id="products-table"><thead><tr><th>ছবি</th><th>পণ্যের নাম</th><th>মূল্য</th><th>কোড</th><th>কার্যক্রম</th></tr></thead><tbody></tbody></table></div></div>
+                </div>
+                <div id="categories-view" class="view">
+                    <div class="page-header"><h1>বিভাগ ব্যবস্থাপনা</h1><button class="btn btn-primary" id="add-category-btn"><i class="fas fa-plus"></i> নতুন বিভাগ যোগ করুন</button></div>
+                    <div class="card"><div class="category-tree" id="category-tree-container"></div></div>
+                </div>
+                <div id="orders-view" class="view">
+                    <div class="card"><div class="table-wrapper"><table class="data-table" id="orders-table"><thead><tr><th>ইনভয়েস নং</th><th>গ্রাহকের নাম</th><th>তারিখ</th><th>মোট টাকা</th><th>স্ট্যাটাস</th></tr></thead><tbody></tbody></table></div></div>
+                </div>
+                <div id="users-view" class="view">
+                    <div class="card"><div class="table-wrapper"><table class="data-table" id="users-table"><thead><tr><th>নাম</th><th>ইমেইল</th><th>মোবাইল নম্বর</th><th>ঠিকানা</th><th>কার্যক্রম</th></tr></thead><tbody></tbody></table></div></div>
+                </div>
+                <!-- NEW/MODIFIED START: Enhanced App Settings View -->
+                <div id="settings-view" class="view">
+                    <form id="settings-form">
+                        <div class="card">
+                            <h2>সাধারণ সেটিং</h2><br>
+                            <div class="form-group">
+                                <label for="app-name-input">অ্যাপের নাম</label>
+                                <input type="text" id="app-name-input" placeholder="আপনার অ্যাপের নাম দিন" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="app-logo-input">অ্যাপ লোগো URL</label>
+                                <input type="text" id="app-logo-input" placeholder="আপনার লোগোর লিংক দিন" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="call-number-input">কল বাটন নম্বর</label>
+                                <input type="text" id="call-number-input" placeholder="ফুটার কল বাটনের জন্য নম্বর" required>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h2>ফ্লোটিং আইকন সেটিং</h2><br>
+                             <div class="form-group">
+                                <label for="whatsapp-number-input">ফ্লোটিং হোয়াটসঅ্যাপ নম্বর</label>
+                                <input type="text" id="whatsapp-number-input" placeholder="যেমন: 8801700000000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="whatsapp-float-visibility">ফ্লোটিং হোয়াটসঅ্যাপ আইকন</label>
+                                <select id="whatsapp-float-visibility">
+                                    <option value="show">দেখান (Show)</option>
+                                    <option value="hide">লুকান (Hide)</option>
+                                </select>
+                            </div>
+                             <div class="form-group">
+                                <label for="dark-mode-toggle-visibility">ডার্ক মুড টগল আইকন</label>
+                                <select id="dark-mode-toggle-visibility">
+                                    <option value="show">দেখান (Show)</option>
+                                    <option value="hide">লুকান (Hide)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h2>ফুটার "Follow Us" লিঙ্ক</h2><br>
+                            <div class="form-group"><label for="facebook-link-input">ফেসবুক লিঙ্ক</label><input type="text" id="facebook-link-input"></div>
+                            <div class="form-group"><label for="telegram-link-input">টেলিগ্রাম লিঙ্ক</label><input type="text" id="telegram-link-input"></div>
+                            <div class="form-group"><label for="footer-whatsapp-link-input">হোয়াটসঅ্যাপ লিঙ্ক</label><input type="text" id="footer-whatsapp-link-input"></div>
+                            <div class="form-group"><label for="tiktok-link-input">টিকটক লিঙ্ক</label><input type="text" id="tiktok-link-input"></div>
+                            <div class="form-group"><label for="youtube-link-input">ইউটিউব লিঙ্ক</label><input type="text" id="youtube-link-input"></div>
+                            <div class="form-group"><label for="instagram-link-input">ইন্সটাগ্রাম লিঙ্ক</label><input type="text" id="instagram-link-input"></div>
+                        </div>
+
+                        <div class="card">
+                             <h2>ফুটার "Information" লেখা</h2><br>
+                             <div class="form-group">
+                                <label for="about-us-content">About Us</label>
+                                <textarea id="about-us-content"></textarea>
+                             </div>
+                             <div class="form-group">
+                                <label for="privacy-policy-content">Privacy Policy</label>
+                                <textarea id="privacy-policy-content"></textarea>
+                             </div>
+                             <div class="form-group">
+                                <label for="terms-conditions-content">Terms & Conditions</label>
+                                <textarea id="terms-conditions-content"></textarea>
+                             </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">সকল পরিবর্তন সংরক্ষণ করুন</button>
+                    </form>
+                </div>
+                <!-- NEW/MODIFIED END -->
+            </main>
+        </div>
+    </div>
+
+    <div class="modal" id="form-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modal-title"></h2><button class="modal-close-btn">&times;</button></div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const DB = {
+            getData: (key, isObject = false) => {
+                const data = localStorage.getItem(key);
+                if (isObject) return data ? JSON.parse(data) : {};
+                return data ? JSON.parse(data) : [];
+            },
+            saveData: (key, data) => localStorage.setItem(key, JSON.stringify(data)),
+            generateId: () => `id_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        };
+        const SETTINGS_KEY = 'app_settings';
+
+        function seedInitialData() {
+            if (!localStorage.getItem(SETTINGS_KEY)) {
+                DB.saveData(SETTINGS_KEY, {
+                    appName: "The Arafat Collection",
+                    appLogo: "https://i.ibb.co/DHr0q3RL/20250905-012107-0000.png"
+                });
+            }
+            if (DB.getData('admin_categories').length === 0) {
+                const cat1 = { id: DB.generateId(), name: 'Men\'s Fashion', parentId: null, img: 'https://i.ibb.co/60wH1Kh7/7-XZfu6p592x-Jc-Peiy-Ljs-Gz-Jx2f-ZWds-T9a7l-ZJpdn.png'};
+                DB.saveData('admin_categories', [cat1]);
+            }
+        }
+
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menu-toggle');
+        const headerTitle = document.getElementById('header-title');
+        const overlay = document.getElementById('overlay');
+
+        function toggleSidebar(forceClose = false) {
+            const isOpen = sidebar.classList.contains('open');
+            if (forceClose || isOpen) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('visible');
+                document.body.classList.remove('sidebar-open-body');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('visible');
+                document.body.classList.add('sidebar-open-body');
+            }
+        }
+        menuToggle.addEventListener('click', () => toggleSidebar());
+        overlay.addEventListener('click', () => toggleSidebar(true));
+        
+        const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+        const views = document.querySelectorAll('.main-content .view');
+        function showView(viewId) {
+            views.forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            navLinks.forEach(link => {
+                const isActive = link.dataset.view === viewId;
+                link.classList.toggle('active', isActive);
+                if (isActive) headerTitle.textContent = link.querySelector('span').textContent;
+            });
+            if (viewId === 'settings-view') renderSettings();
+            toggleSidebar(true);
+        }
+        navLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); showView(e.currentTarget.dataset.view); }));
+
+        const modal = document.getElementById('form-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        function openModal(title, formHTML) { modalTitle.textContent = title; modalBody.innerHTML = formHTML; modal.classList.add('visible'); }
+        function closeModal() { modal.classList.remove('visible'); modalBody.innerHTML = ''; }
+        document.querySelector('.modal-close-btn').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+        function renderDashboard() {
+            document.getElementById('total-products-stat').textContent = DB.getData('admin_products').length;
+            document.getElementById('total-categories-stat').textContent = DB.getData('admin_categories').length;
+            document.getElementById('total-orders-stat').textContent = fetchAllOrders().length;
+            document.getElementById('total-users-stat').textContent = fetchAllUsers().length;
+        }
+
+        const categoryTreeContainer = document.getElementById('category-tree-container');
+        function buildCategoryTree(categories, parentId) {
+            return categories.filter(c => c.parentId === parentId).map(c => ({ ...c, children: buildCategoryTree(categories, c.id) }));
+        }
+        function renderCategoryTree() {
+            const categories = DB.getData('admin_categories');
+            const tree = buildCategoryTree(categories, null);
+            function createTreeHTML(nodes) {
+                let html = '<ul>';
+                nodes.forEach(node => {
+                    html += `<li><span class="category-item-name">${node.name}</span><div class="category-item-actions"><button class="btn btn-primary btn-sm add-subcategory-btn" data-id="${node.id}" title="Add Sub-category"><i class="fas fa-plus"></i></button><button class="btn btn-secondary btn-sm edit-category-btn" data-id="${node.id}" title="Edit"><i class="fas fa-edit"></i></button><button class="btn btn-danger btn-sm delete-category-btn" data-id="${node.id}" title="Delete"><i class="fas fa-trash"></i></button></div></li>`;
+                    if (node.children.length > 0) html += `<li>${createTreeHTML(node.children)}</li>`;
+                });
+                return html + '</ul>';
+            }
+            categoryTreeContainer.innerHTML = categories.length > 0 ? createTreeHTML(tree) : '<p style="text-align:center;">কোনো বিভাগ পাওয়া যায়নি।</p>';
+        }
+        const categoryFormHTML = (c = {}, pId = null) => `<form id="category-form" data-id="${c.id||''}" data-parent-id="${pId||c.parentId||''}"><div class="form-group"><label for="category-name">বিভাগের নাম</label><input type="text" id="category-name" value="${c.name||''}" required></div><div class="form-group"><label for="category-image">ছবির URL</label><input type="text" id="category-image" value="${c.img||''}" required></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="document.querySelector('.modal-close-btn').click()">বাতিল</button><button type="submit" class="btn btn-primary">সংরক্ষণ</button></div></form>`;
+        document.getElementById('add-category-btn').addEventListener('click', () => openModal('নতুন বিভাগ যোগ করুন', categoryFormHTML({}, null)));
+        categoryTreeContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const id = btn.dataset.id;
+            const allCategories = DB.getData('admin_categories');
+            if (btn.classList.contains('add-subcategory-btn')) openModal('নতুন উপ-বিভাগ যোগ করুন', categoryFormHTML({}, id));
+            else if (btn.classList.contains('edit-category-btn')) openModal('বিভাগ সম্পাদনা করুন', categoryFormHTML(allCategories.find(c => c.id === id)));
+            else if (btn.classList.contains('delete-category-btn')) if (confirm('আপনি কি নিশ্চিত? এর অধীনে থাকা সকল উপ-বিভাগও মুছে যাবে।')) {
+                let idsToDelete = [id], currentIds = [id];
+                while(currentIds.length > 0) {
+                    const children = allCategories.filter(c => currentIds.includes(c.parentId)).map(c => c.id);
+                    idsToDelete.push(...children);
+                    currentIds = children;
+                }
+                DB.saveData('admin_categories', allCategories.filter(c => !idsToDelete.includes(c.id)));
+                renderAll();
+            }
+        });
+
+        const productsTableBody = document.querySelector('#products-table tbody');
+        function renderProducts() {
+            const products = DB.getData('admin_products');
+            productsTableBody.innerHTML = '';
+            if (products.length === 0) { productsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো পণ্য পাওয়া যায়নি।</td></tr>'; return; }
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><img src="${p.images[0]}" alt="${p.name}" class="product-image"></td><td>${p.name}</td><td>${p.price} TK</td><td>${p.code || 'N/A'}</td><td class="actions-cell"><button class="btn btn-secondary edit-product-btn" data-id="${p.id}"><i class="fas fa-edit"></i></button><button class="btn btn-danger delete-product-btn" data-id="${p.id}"><i class="fas fa-trash"></i></button></td>`;
+                productsTableBody.appendChild(tr);
+            });
+        }
+        function getCategoryOptionsHTML(selectedId = null) {
+            const tree = buildCategoryTree(DB.getData('admin_categories'), null);
+            let options = '<option value="">-- বিভাগ নির্বাচন করুন --</option>';
+            function generate(nodes, depth = 0) {
+                nodes.forEach(node => {
+                    options += `<option value="${node.id}" ${node.id === selectedId ? 'selected' : ''}>${'--'.repeat(depth)} ${node.name}</option>`;
+                    if (node.children.length > 0) generate(node.children, depth + 1);
+                });
+            }
+            generate(tree); return options;
+        }
+        const productFormHTML = (p = {}) => `<form id="product-form" data-id="${p.id||''}"><div class="form-group"><label for="product-category">বিভাগ</label><select id="product-category" required>${getCategoryOptionsHTML(p.categoryId)}</select></div><div class="form-group"><label for="product-name">পণ্যের নাম</label><input type="text" id="product-name" value="${p.name||''}" required></div><div class="form-group"><label for="product-price">মূল্য (TK)</label><input type="number" id="product-price" value="${p.price||''}" required></div><div class="form-group"><label for="product-code">কোড</label><input type="text" id="product-code" value="${p.code||''}"></div><div class="form-group"><label for="product-image">ছবির URL</label><input type="text" id="product-image" value="${p.images?p.images[0]:''}" required></div><div class="form-group"><label for="product-description">বিবরণ</label><textarea id="product-description">${p.descriptionHTML||''}</textarea></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="document.querySelector('.modal-close-btn').click()">বাতিল</button><button type="submit" class="btn btn-primary">সংরক্ষণ</button></div></form>`;
+        document.getElementById('add-product-btn').addEventListener('click', () => openModal('নতুন পণ্য যোগ করুন', productFormHTML()));
+        productsTableBody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-product-btn'), deleteBtn = e.target.closest('.delete-product-btn');
+            if (editBtn) openModal('পণ্য সম্পাদনা করুন', productFormHTML(DB.getData('admin_products').find(p => p.id === editBtn.dataset.id)));
+            if (deleteBtn && confirm('আপনি কি নিশ্চিত?')) DB.saveData('admin_products', DB.getData('admin_products').filter(p => p.id !== deleteBtn.dataset.id)), renderAll();
+        });
+
+        const usersTableBody = document.querySelector('#users-table tbody');
+        function fetchAllUsers() {
+            let users = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                try {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (data && data.password && data.name) users.push({ mobile: key, ...data });
+                } catch (e) {}
+            } return users;
+        }
+        function renderUsers() {
+            const users = fetchAllUsers();
+            usersTableBody.innerHTML = '';
+            if (users.length === 0) { usersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো ব্যবহারকারী পাওয়া যায়নি।</td></tr>'; return; }
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${user.name}</td><td>${user.email||'N/A'}</td><td>${user.mobile}</td><td>${(user.address && user.city)?`${user.address}, ${user.city}`:'N/A'}</td><td class="actions-cell"><button class="btn btn-secondary edit-user-btn" data-id="${user.mobile}"><i class="fas fa-edit"></i></button></td>`;
+                usersTableBody.appendChild(tr);
+            });
+        }
+        const userFormHTML = (u={}) => `<form id="user-form" data-id="${u.mobile}"><div class="form-group"><label for="user-name">নাম</label><input type="text" id="user-name" value="${u.name||''}" required></div><div class="form-group"><label for="user-email">ইমেইল</label><input type="email" id="user-email" value="${u.email||''}"></div><div class="form-group"><label for="user-mobile">মোবাইল</label><input type="text" id="user-mobile" value="${u.mobile||''}" disabled></div><div class="form-group"><label for="user-password">নতুন পাসওয়ার্ড (খালি রাখুন)</label><input type="password" id="user-password"></div><div class="form-group"><label for="user-address">ঠিকানা</label><input type="text" id="user-address" value="${u.address||''}"></div><div class="form-group"><label for="user-city">শহর</label><input type="text" id="user-city" value="${u.city||''}"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" onclick="document.querySelector('.modal-close-btn').click()">বাতিল</button><button type="submit" class="btn btn-primary">সংরক্ষণ</button></div></form>`;
+        usersTableBody.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-user-btn');
+            if (editBtn) openModal('ব্যবহারকারীর তথ্য সম্পাদনা', userFormHTML(fetchAllUsers().find(u => u.mobile === editBtn.dataset.id)));
+        });
+
+        const ordersTableBody = document.querySelector('#orders-table tbody');
+        function fetchAllOrders() {
+            let orders = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('orders_') || key === 'guest_orders') orders = orders.concat(DB.getData(key));
+            } return orders.sort((a,b) => new Date(b.date) - new Date(a.date));
+        }
+        function renderOrders() {
+            const orders = fetchAllOrders();
+            ordersTableBody.innerHTML = '';
+            if (orders.length === 0) { ordersTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">কোনো অর্ডার পাওয়া যায়নি।</td></tr>'; return; }
+            orders.forEach(order => {
+                const tr = document.createElement('tr');
+                const statusOptions = ['Pending','Shipped','Delivered','Cancelled'].map(s => `<option value="${s}" ${order.status === s?'selected':''}>${s}</option>`).join('');
+                tr.innerHTML = `<td>${order.invoice}</td><td>${order.customer.name}</td><td>${new Date(order.date).toLocaleDateString('bn-BD')}</td><td>${order.total.toFixed(2)} TK</td><td><select class="status-select ${order.status.toLowerCase()}" data-invoice="${order.invoice}">${statusOptions}</select></td>`;
+                ordersTableBody.appendChild(tr);
+            });
+        }
+        ordersTableBody.addEventListener('change', (e) => {
+            if (e.target.classList.contains('status-select')) {
+                const newStatus = e.target.value, invoice = e.target.dataset.invoice; let updated = false;
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if ((key.startsWith('orders_') || key === 'guest_orders') && !updated) {
+                        let userOrders = DB.getData(key);
+                        const orderIndex = userOrders.findIndex(o => o.invoice === invoice);
+                        if (orderIndex > -1) {
+                            userOrders[orderIndex].status = newStatus;
+                            DB.saveData(key, userOrders); updated = true;
+                        }
+                    }
+                } if(updated) renderOrders();
+            }
+        });
+
+        // <!-- NEW/MODIFIED START: Logic for Settings Page -->
+        function applySettings() {
+            const settings = DB.getData(SETTINGS_KEY, true);
+            const appName = settings.appName || "Admin Panel";
+            document.getElementById('admin-app-name').textContent = appName;
+        }
+
+        function renderSettings() {
+            const settings = DB.getData(SETTINGS_KEY, true);
+            document.getElementById('app-name-input').value = settings.appName || '';
+            document.getElementById('app-logo-input').value = settings.appLogo || '';
+            document.getElementById('call-number-input').value = settings.callNumber || '';
+            document.getElementById('whatsapp-number-input').value = settings.whatsappNumber || '';
+            document.getElementById('whatsapp-float-visibility').value = settings.showWhatsappFloat === false ? 'hide' : 'show';
+            document.getElementById('dark-mode-toggle-visibility').value = settings.showDarkModeToggle === false ? 'hide' : 'show';
+            document.getElementById('facebook-link-input').value = settings.facebookLink || '';
+            document.getElementById('telegram-link-input').value = settings.telegramLink || '';
+            document.getElementById('footer-whatsapp-link-input').value = settings.footerWhatsappLink || '';
+            document.getElementById('tiktok-link-input').value = settings.tiktokLink || '';
+            document.getElementById('youtube-link-input').value = settings.youtubeLink || '';
+            document.getElementById('instagram-link-input').value = settings.instagramLink || '';
+            document.getElementById('about-us-content').value = settings.aboutUsContent || '';
+            document.getElementById('privacy-policy-content').value = settings.privacyPolicyContent || '';
+            document.getElementById('terms-conditions-content').value = settings.termsConditionsContent || '';
+        }
+
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const currentSettings = DB.getData(SETTINGS_KEY, true);
+            const newSettings = {
+                ...currentSettings,
+                appName: document.getElementById('app-name-input').value,
+                appLogo: document.getElementById('app-logo-input').value,
+                callNumber: document.getElementById('call-number-input').value,
+                whatsappNumber: document.getElementById('whatsapp-number-input').value,
+                showWhatsappFloat: document.getElementById('whatsapp-float-visibility').value === 'show',
+                showDarkModeToggle: document.getElementById('dark-mode-toggle-visibility').value === 'show',
+                facebookLink: document.getElementById('facebook-link-input').value,
+                telegramLink: document.getElementById('telegram-link-input').value,
+                footerWhatsappLink: document.getElementById('footer-whatsapp-link-input').value,
+                tiktokLink: document.getElementById('tiktok-link-input').value,
+                youtubeLink: document.getElementById('youtube-link-input').value,
+                instagramLink: document.getElementById('instagram-link-input').value,
+                aboutUsContent: document.getElementById('about-us-content').value,
+                privacyPolicyContent: document.getElementById('privacy-policy-content').value,
+                termsConditionsContent: document.getElementById('terms-conditions-content').value,
+            };
+            DB.saveData(SETTINGS_KEY, newSettings);
+            applySettings();
+            alert('সেটিং সফলভাবে সংরক্ষণ করা হয়েছে!');
+        });
+        // <!-- NEW/MODIFIED END -->
+        
+        modalBody.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const form = e.target;
+            if (form.id === 'product-form') {
+                const pId = form.dataset.id;
+                const newP = { id: pId || DB.generateId(), name: form.querySelector('#product-name').value, price: parseFloat(form.querySelector('#product-price').value), code: form.querySelector('#product-code').value, images: [form.querySelector('#product-image').value], descriptionHTML: form.querySelector('#product-description').value, categoryId: form.querySelector('#product-category').value };
+                let products = DB.getData('admin_products');
+                if (pId) products = products.map(p => p.id === pId ? newP : p); else products.push(newP);
+                DB.saveData('admin_products', products);
+            }
+            if (form.id === 'category-form') {
+                const cId = form.dataset.id, pId = form.dataset.parentId;
+                const newC = { id: cId || DB.generateId(), name: form.querySelector('#category-name').value, img: form.querySelector('#category-image').value, parentId: pId === 'null' || pId === '' ? null : pId };
+                let categories = DB.getData('admin_categories');
+                if (cId) categories = categories.map(c => c.id === cId ? newC : c); else categories.push(newC);
+                DB.saveData('admin_categories', categories);
+            }
+            if (form.id === 'user-form') {
+                const uId = form.dataset.id;
+                let uData = JSON.parse(localStorage.getItem(uId));
+                if (uData) {
+                    uData.name = form.querySelector('#user-name').value;
+                    uData.email = form.querySelector('#user-email').value;
+                    uData.address = form.querySelector('#user-address').value;
+                    uData.city = form.querySelector('#user-city').value;
+                    const newPass = form.querySelector('#user-password').value;
+                    if (newPass) uData.password = newPass;
+                    localStorage.setItem(uId, JSON.stringify(uData));
+                }
+            }
+            closeModal();
+            renderAll();
+        });
+
+        function renderAll() {
+            applySettings(); renderDashboard(); renderProducts(); renderCategoryTree(); renderOrders(); renderUsers();
+        }
+        seedInitialData();
+        renderAll();
+    });
+    </script>
+</body>
+</html>
