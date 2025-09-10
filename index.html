@@ -3,107 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Arafat Collection - Mobile App</title>
-    <!-- Icon Library (Font Awesome) -->
+    <title>The Arafat Collection</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
     <style>
-        /* --- General Styles & Variables --- */
-        :root {
-            --primary-color: #008000; /* Green */
-            --dark-color: #222;
-            --light-color: #fff;
-            --grey-color: #f4f4f4;
-            --text-color: #333;
-            --border-color: #eee;
-            --box-bg-color: #fff;
-            --header-height: 55px;
-            --footer-nav-height: 60px;
-        }
-
-        /* --- START: Dark Mode Theme --- */
-        body.dark-mode {
-            --dark-color: #f0f0f0;
-            --light-color: #1a1a1a;
-            --grey-color: #2a2a2a;
-            --text-color: #f0f0f0;
-            --border-color: #333;
-            --box-bg-color: #222;
-        }
-        /* --- END: Dark Mode Theme --- */
-
+        :root { --primary-color: #008000; --dark-color: #222; --light-color: #fff; --grey-color: #f4f4f4; --text-color: #333; --border-color: #eee; --box-bg-color: #fff; --header-height: 55px; --footer-nav-height: 60px; }
+        body.dark-mode { --dark-color: #f0f0f0; --light-color: #1a1a1a; --grey-color: #2a2a2a; --text-color: #f0f0f0; --border-color: #333; --box-bg-color: #222; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background-color: var(--light-color); color: var(--text-color); -webkit-tap-highlight-color: transparent; transition: background-color 0.3s ease, color 0.3s ease; }
+        body { background-color: var(--light-color); color: var(--text-color); transition: background-color 0.3s ease, color 0.3s ease; }
         .container { padding: 15px; }
-        img { max-width: 100%; height: auto; }
-
-        /* --- START: Splash Screen Styles --- */
-        .splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--light-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s ease-in-out, visibility 0.8s; visibility: visible; opacity: 1; }
+        .splash-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--light-color); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s ease; visibility: visible; opacity: 1; }
         .splash-screen.hidden { opacity: 0; visibility: hidden; }
-        .splash-screen img { max-width: 150px; animation: pulse 1.5s infinite ease-in-out; }
-        .splash-screen h1 { font-size: 24px; margin-top: 15px; color: var(--text-color); }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        /* --- END: Splash Screen Styles --- */
-
-        /* --- Main App Wrapper --- */
-        .app-wrapper { max-width: 450px; margin: 0 auto; position: relative; background: var(--light-color); min-height: 100vh; padding-top: var(--header-height); padding-bottom: var(--footer-nav-height); overflow-x: hidden; transition: background-color 0.3s ease; }
-
-        /* --- Header --- */
-        .app-header { position: fixed; top: 0; left: 0; right: 0; max-width: 450px; margin: 0 auto; height: var(--header-height); background-color: var(--box-bg-color); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid var(--border-color); z-index: 1000; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .splash-screen img { max-width: 150px; }
+        .app-wrapper { max-width: 450px; margin: 0 auto; position: relative; background: var(--light-color); min-height: 100vh; padding-top: var(--header-height); padding-bottom: var(--footer-nav-height); overflow-x: hidden; }
+        .app-header { position: fixed; top: 0; left: 0; right: 0; max-width: 450px; margin: 0 auto; height: var(--header-height); background-color: var(--box-bg-color); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid var(--border-color); z-index: 1000; }
         .header-btn { background: none; border: none; font-size: 24px; cursor: pointer; width: 40px; text-align: center; color: var(--text-color); }
         .app-header .logo-container { display: flex; align-items: center; gap: 8px; text-decoration: none; }
         .app-header .logo-container img { height: 40px; }
-        .app-header .logo-container span { font-size: 16px; font-weight: bold; color: var(--text-color); display: none; } /* Initially hidden */
-        .search-bar { display: none; position: absolute; top: var(--header-height); left:0; right:0; padding: 10px; background: var(--box-bg-color); border-bottom: 1px solid var(--border-color); z-index: 999;}
-        .search-bar input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--light-color); color: var(--text-color); }
-
-        /* --- Footer Navigation --- */
-        .footer-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 450px; margin: 0 auto; height: var(--footer-nav-height); background-color: var(--box-bg-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 1000; transition: background-color 0.3s ease, border-color 0.3s ease; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-color); font-size: 12px; text-decoration: none; position: relative; flex: 1; text-align: center; }
+        .app-header .logo-container span { font-size: 16px; font-weight: bold; color: var(--text-color); }
+        .footer-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 450px; margin: 0 auto; height: var(--footer-nav-height); background-color: var(--box-bg-color); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-color); font-size: 12px; text-decoration: none; flex: 1; text-align: center; }
         .nav-item i { font-size: 22px; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary-color); }
-        #cart-counter { position: absolute; top: -5px; right: calc(50% - 25px); background-color: red; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
-
-        /* --- Page Views --- */
-        .page { display: none; }
-        .page.active { display: block; }
-        
-        /* --- Image Slider Styles --- */
-        .slider-container { width: 100%; overflow: hidden; position: relative; aspect-ratio: 2.2 / 1; }
-        .slider-wrapper { position: relative; width: 100%; height: 100%; }
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; z-index: 1; }
-        .slide.active { opacity: 1; z-index: 2; }
-        .slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .slider-nav { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
-        .slider-nav .dot { width: 10px; height: 10px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.7); cursor: pointer; }
-        .slider-nav .dot.active { background-color: var(--primary-color); }
-
-        /* --- Home Page Styles --- */
+        .page { display: none; } .page.active { display: block; }
+        .slider-container { width: 100%; overflow: hidden; position: relative; aspect-ratio: 2.2 / 1; background-color: var(--grey-color); }
+        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .slide.active { opacity: 1; }
+        .slide img { width: 100%; height: 100%; object-fit: cover; }
         .section-title { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 15px 0; }
         .section-title h2 { font-size: 18px; }
-        .view-all-btn { background-color: var(--primary-color); color: white; padding: 5px 12px; border-radius: 5px; font-size: 12px; text-decoration: none; cursor: pointer; }
-        #search-results-container { padding: 15px; }
-        #search-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        
-        /* --- Categories Grid Styles --- */
         .categories-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center; }
         .category-item-link { text-decoration: none; color: inherit; }
-        .category-item { background-color: var(--grey-color); padding: 10px 5px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .category-item { background-color: var(--grey-color); padding: 10px 5px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         .category-item img { height: 40px; width: 40px; margin-bottom: 8px; object-fit: contain; }
         .category-item span { font-size: 12px; line-height: 1.2; }
-
-        /* --- Horizontal Auto-Scrolling Product Section --- */
-        .horizontal-scroller-container { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .horizontal-scroller-container::-webkit-scrollbar { display: none; }
-        .horizontal-scroller-wrapper { display: flex; gap: 12px; }
-        .horizontal-scroller-item { flex: 0 0 48%; scroll-snap-align: start; }
-
-        /* --- Product Card General Style --- */
-        .product-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--box-bg-color); display: flex; flex-direction: column; transition: background-color 0.3s ease, border-color 0.3s ease; }
+        .products-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .product-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--box-bg-color); display: flex; flex-direction: column; }
         .product-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
         .product-info { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
         .product-info h3 { font-size: 14px; font-weight: normal; min-height: 2.4em; overflow: hidden; }
         .product-price { font-size: 16px; font-weight: bold; color: var(--primary-color); margin: 8px 0; }
+        .order-btn { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: auto; }
+        .app-footer { background-color: var(--grey-color); padding: 20px 15px; }
+        .footer-section { background: var(--box-bg-color); border-radius: 8px; margin-bottom: 15px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .footer-section h4 { font-size: 16px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .footer-brand { text-align: center; } .footer-brand img { height: 50px; margin-bottom: 10px; }
+        .footer-brand p { font-size: 18px; font-weight: bold; color: var(--text-color); }
+        .footer-links ul { list-style: none; } .footer-links ul li { margin-bottom: 10px; }
+        .footer-links ul li a { color: var(--text-color); text-decoration: none; }
+        .links-info-card { display: flex; gap: 15px; margin-bottom: 15px; }
+        .links-info-card .footer-section { flex: 1; margin-bottom: 0; }
+        .footer-social-links { display: flex; justify-content: space-between; gap: 10px; }
+        .footer-social-column { display: flex; flex-direction: column; gap: 10px; flex-basis: calc(50% - 5px); }
+        .footer-social-btn { display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; padding: 8px 12px; border-radius: 5px; font-size: 14px; font-weight: bold; gap: 8px; width: 100%; }
+        .footer-social-btn.facebook { background-color: #1877F2; } .footer-social-btn.telegram { background-color: #26A5E4; } .footer-social-btn.whatsapp { background-color: #25D366; } .footer-social-btn.tiktok { background-color: #000000; } .footer-social-btn.youtube { background-color: #FF0000; } .footer-social-btn.instagram { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%); }
+        .footer-bottom { text-align: center; font-size: 14px; color: #777; padding-top: 15px; }
+        .sidebar { position: fixed; top: 0; left: -100%; width: 80%; max-width: 300px; height: 100%; background-color: var(--light-color); z-index: 2000; transition: left 0.3s ease-in-out; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar.open { left: 0; }
+        .sidebar-header { padding: 15px; background-color: var(--dark-color); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header .sidebar-title { display: flex; align-items: center; gap: 10px; } .sidebar-header .sidebar-title img { height: 30px; }
+        .sidebar-header .sidebar-title h3 { font-size: 16px; margin: 0; }
+        .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; }
+        .backdrop.visible { display: block; }
+        .sidebar-menu { list-style: none; overflow-y: auto; flex-grow: 1; padding: 10px; }
+        .sidebar-menu li a { display: flex; align-items: center; gap: 15px; padding: 12px 15px; color: var(--text-color); text-decoration: none; border-radius: 8px; }
+        .sidebar-menu li a:hover { background-color: var(--grey-color); }
+        .whatsapp-float { position: fixed; width: 50px; height: 50px; bottom: 80px; right: 25px; background-color: #25D366; color: #FFF; border-radius: 50px; box-shadow: 2px 2px 3px #999; z-index: 100; display: flex; justify-content: center; align-items: center; text-decoration: none; font-size: 28px; }
+        .theme-toggle-btn { position: fixed; bottom: 80px; right: 85px; width: 50px; height: 50px; background-color: var(--dark-color); color: var(--light-color); border: 1px solid var(--border-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 22px; z-index: 100; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); cursor: pointer; }
+        .theme-toggle-btn .fa-sun { display: none; }
+        body.dark-mode .theme-toggle-btn .fa-sun { display: block; } body.dark-mode .theme-toggle-btn .fa-moon { display: none; }
+        .auth-container { padding: 20px; display: flex; flex-direction: column; justify-content: center; min-height: calc(100vh - var(--header-height) - var(--footer-nav-height)); }
+        .form-group { margin-bottom: 20px; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 16px; }
+        .auth-link { text-align: center; margin-top: 30px; font-size: 16px; }
+        .auth-link a { color: var(--primary-color); text-decoration: underline; font-weight: bold; cursor: pointer; }
+        .action-btn { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .dashboard-container {padding:20px;} .dashboard-box { background: var(--box-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .dashboard-logout-btn { display: block; text-align:center; width: 100%; padding: 12px; margin-top: 20px; font-size: 16px; color: #fff; background-color: #d9534f; border: none; border-radius: 8px; cursor: pointer; text-decoration: none; }
+        #product-details-page .pdp-main-image { width: 100%; aspect-ratio: 1/1.1; object-fit: cover; }
+        .pdp-title { font-size: 20px; } .pdp-price { font-size: 22px; color: var(--primary-color); font-weight: bold; }
+        .order-now-main-btn { width: 100%; padding: 14px; font-size: 18px; font-weight: bold; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; }
+        #checkout-page .checkout-container { padding: 15px; }
+        #order-submit-btn { width: 100%; padding: 14px; font-size: 18px; font-weight: bold; }
+        .confirmation-container { padding: 20px; text-align: center; }
+        .orders-table { width: 100%; border-collapse: collapse; text-align: center; }
+        .orders-table th, .orders-table td { padding: 12px 8px; border: 1px solid var(--border-color); }
+        .orders-table .status { padding: 4px 8px; border-radius: 5px; color: white; font-weight: bold; font-size: 12px; }
+        .orders-table .status.pending { background-color: #ffc107; } .orders-table .status.shipped { background-color: #17a2b8; } .orders-table .status.delivered { background-color: #28a745; } .orders-table .status.cancelled { background-color: #dc3545; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 3000; display: none; justify-content: center; align-items: center; }
+        .modal.visible { display: flex; }
+        .modal-content { background-color: var(--box-bg-color); border-radius: 8px; padding: 20px; width: 90%; max-width: 500px; position: relative; }
+        .modal-close-btn { position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="splash-screen" id="splash-screen"><img id="splash-logo" src=""></div>
+
+    <div class="app-wrapper">
+        <header class="app-header">
+            <button class="header-btn" id="left-header-btn"><i class="fas fa-bars"></i></button>
+            <a href="#" class="nav-link logo-container" data-page="home-page">
+                <img id="header-logo" src="">
+                <span id="header-title"></span>
+            </a>
+            <button class="header-btn" style="visibility: hidden;"><i class="fas fa-search"></i></button>
+        </header>
+
+        <main id="main-content">
+            <div id="home-page" class="page active">
+                <div class="slider-container">
+                    <div class="slide active"><img src=""></div>
+                    <div class="slide"><img src=""></div>
+                    <div class="slide"><img src=""></div>
+                </div>
+                <div class="container">
+                    <div class="section-title"><h2>Categories</h2></div>
+                    <div class="categories-grid" id="home-categories-grid"></div>
+                    <div class="section-title"><h2>All Products</h2></div>
+                    <div class="products-grid" id="homepage-products-grid"></div>
+                </div>
+                <footer class="app-footer">
+                    <div class="footer-section footer-brand"><img id="footer-logo" src=""><p id="footer-app-name"></p></div>
+                    <div class="links-info-card">
+                        <div class="footer-section footer-links"><h4>Information</h4><ul>
+                            <li><a href="#" class="info-link" data-info="about-us">About Us</a></li>
+                            <li><a href="#" class="info-link" data-info="privacy-policy">Privacy Policy</a></li>
+                            <li><a href="#" class="info-link" data-info="terms-conditions">Terms & Conditions</a></li>
+                        </ul></div>
+                    </div>
+                    <div class="footer-section"><h4>Follow Us</h4><div class="footer-social-links"><div class="footer-social-column">
+                        <a href="#" target="_blank" class="footer-social-btn facebook"><i class="fab fa-facebook-f"></i> Facebook</a>
+                        <a href="#" target="_blank" class="footer-social-btn telegram"><i class="fab fa-telegram-plane"></i> Telegram</a>
+                        <a href="#" target="_blank" class="footer-social-btn whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                    </div><div class="footer-social-column">
+                        <a href="#" target="_blank" class="footer-social-btn tiktok"><i class="fab fa-tiktok"></i> TikTok</a>
+                        <a href="#" target="_blank" class="footer-social-btn youtube"><i class="fab fa-youtube"></i> YouTube</a>
+                        <a href="#" target="_blank" class="footer-social-btn instagram"><i class="fab fa-instagram"></i> Instagram</a>
+                    </div></div></div>
+                    <div class="footer-bottom"><p>Developed By JR Zone @2025</p></div>
+                </footer>
+            </div>
+            
+            <div id="product-list-page" class="page"><div class="container">
+                <h2 id="product-list-title" style="text-align: center; margin-bottom: 20px;"></h2>
+                <div class="products-grid" id="product-list-grid"></div>
+            </div></div>
+            
+            <div id="product-details-page" class="page"><div class="container">
+                <img src="" alt="Main product image" class="pdp-main-image">
+                <h2 class="pdp-title"></h2>
+                <p class="pdp-price"></p>
+                <div id="pdp-description"></div>
+                <button id="pdp-order-now-btn" class="order-now-main-btn">Order Now ✔</button>
+            </div></div>
+
+            <div id="checkout-page" class="page"><div class="checkout-container">
+                <form id="checkout-form">
+                    <div class="form-group"><input type="text" id="checkout-name" placeholder="Full Name" required></div>
+                    <div class="form-group"><input type="tel" id="checkout-mobile" placeholder="Mobile Number" required></div>
+                    <div class="form-group"><input type="text" id="checkout-address" placeholder="Full Address" required></div>
+                </form>
+                <p>Total: <span id="checkout-payable">0</span> TK</p>
+                <button id="order-submit-btn" class="action-btn">Order Submit</button>
+            </div></div>
+
+            <div id="confirmation-page" class="page"><div class="confirmation-container">
+                <h2>Thank you</h2><p>Your order has been successfully submitted.</p>
+                <p>Order number: <b id="conf-order-number"></b></p>
+            </div></div>
+
+            <div id="login-page" class="page"><div class="auth-container">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
+                    <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
+                    <button type="submit" class="action-btn">LOGIN</button>
+                </form>
+                <p class="auth-link">Don't have an account? <a id="go-to-register-link">Register here</a></p>
+            </div></div>
+            
+            <div id="register-page" class="page"><div class="auth-container">
+                <h2>Register</h2>
+                <form id="register-form">
+                    <div class="form-group"><input type="text" id="register-name" placeholder="Name" required></div>
+                    <div class="form-group"><input type="email" id="register-email" placeholder="Email" required></div>
+                    <div class="form-group"><input type="password" id="register-password" placeholder="Password" required></div>
+                    <button type="submit" class="action-btn">REGISTER</button>
+                </form>
+                <p class="auth-link">Already have an account? <a id="go-to-login-link">Login</a></p>
+            </div></div>
+
+            <div id="dashboard-page" class="page"><div class="dashboard-container">
+                <div class="dashboard-box">
+                    <h3 id="dashboard-user-name">User</h3>
+                    <div id="dashboard-orders-container"><h3>My Orders</h3>
+                        <table class="orders-table"><thead><tr><th>Invoice</th><th>Date</th><th>Total</th><th>Status</th></tr></thead><tbody id="dashboard-orders-tbody"></tbody></table>
+                    </div>
+                    <a href="#" id="logout-btn" class="dashboard-logout-btn">LOGOUT</a>
+                </div>
+            </div></div>
+        </main>
+
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="sidebar-title"><img id="sidebar-logo" src=""><h3 id="sidebar-app-name"></h3></div><button class="close-btn" id="close-btn">&times;</button></div>
+            <ul class="sidebar-menu" id="sidebar-categories-menu"></ul>
+        </div>
+        <div class="backdrop" id="backdrop"></div>
+        <nav class="footer-nav">
+            <a href="#" class="nav-item nav-link active" data-page="home-page"><i class="fas fa-home"></i><span>Home</span></a>
+            <a href="#" class="nav-item" id="footer-call-link"><i class="fas fa-phone"></i><span>Call</span></a>
+            <a href="#" class="nav-item" id="auth-nav-link" data-page="login-page"><i class="fas fa-user"></i><span>Login</span></a>
+        </nav>
+        <button class="theme-toggle-btn" id="theme-toggle-btn"><i class="fas fa-moon"></i><i class="fas fa-sun"></i></button>
+        <div class="modal" id="generic-modal"><div class="modal-content"><span class="modal-close-btn">&times;</span><h3 id="modal-title"></h3><div id="modal-body"></div></div></div>
+        <a href="#" class="whatsapp-float" id="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
+    </div>
+
+           .product-price { font-size: 16px; font-weight: bold; color: var(--primary-color); margin: 8px 0; }
         .order-btn { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: auto; }
         
         /* --- Generic Button Style --- */
