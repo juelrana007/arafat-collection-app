@@ -4,61 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Arafat Collection - Admin Panel</title>
-    <!-- Icon Library (Font Awesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     
     <style>
         :root {
-            --primary-color: #008000; /* Green */
-            --secondary-color: #4a4a4a;
-            --background-color: #f4f7fa;
-            --sidebar-bg: #2c3e50;
-            --sidebar-text: #ecf0f1;
-            --sidebar-active-bg: #34495e;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --border-color: #e1e1e1;
-            --danger-color: #e74c3c;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
+            --primary-color: #008000; --secondary-color: #4a4a4a; --background-color: #f4f7fa; --sidebar-bg: #2c3e50; --sidebar-text: #ecf0f1; --sidebar-active-bg: #34495e; --card-bg: #ffffff; --text-color: #333; --border-color: #e1e1e1; --danger-color: #e74c3c; --success-color: #2ecc71; --warning-color: #f39c12;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         body { background-color: var(--background-color); color: var(--text-color); }
         body.sidebar-open-body { overflow: hidden; }
+        #login-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--background-color); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background-color: var(--card-bg); padding: 40px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        .login-box h2 { margin-bottom: 25px; color: var(--primary-color); }
+        .login-box .form-group { text-align: left; }
+        .login-box input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 15px; margin-bottom: 15px; }
+        .login-box button { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        .hidden { display: none !important; }
         .admin-container { display: flex; width: 100%; min-height: 100vh; }
         .sidebar { width: 250px; background-color: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100%; z-index: 1002; transform: translateX(-250px); transition: transform 0.3s ease-in-out; }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid var(--sidebar-active-bg); }
         .sidebar-header h2 { font-size: 20px; }
         .sidebar-nav { list-style: none; flex-grow: 1; margin-top: 10px; }
         .sidebar-nav li a { display: flex; align-items: center; gap: 15px; padding: 15px 20px; color: var(--sidebar-text); text-decoration: none; transition: background-color 0.3s ease; font-size: 16px; }
-        .sidebar-nav li a:hover { background-color: var(--sidebar-active-bg); }
+        .sidebar-nav li a:hover, #logout-btn:hover { background-color: var(--sidebar-active-bg); }
         .sidebar-nav li a.active { background-color: var(--primary-color); font-weight: bold; }
         .sidebar-nav li a i { width: 20px; text-align: center; }
+        #logout-btn { background: none; border: none; width: 100%; display: flex; align-items: center; gap: 15px; padding: 15px 20px; color: var(--sidebar-text); text-decoration: none; font-size: 16px; cursor: pointer; margin-top: auto; border-top: 1px solid var(--sidebar-active-bg); }
         .content-wrapper { flex-grow: 1; display: flex; flex-direction: column; width: 100%; transition: margin-left 0.3s ease-in-out; }
         .main-header { display: flex; align-items: center; background-color: var(--card-bg); padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
         .menu-toggle { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color); }
         .header-title { font-size: 22px; font-weight: bold; margin-left: 15px; }
         .main-content { padding: 25px; }
-        .view { display: none; }
-        .view.active { display: block; }
+        .view { display: none; } .view.active { display: block; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
         .page-header h1 { font-size: 28px; }
         .btn { padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; color: white; transition: background-color 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background-color: var(--primary-color); }
-        .btn-primary:hover { background-color: #006400; }
         .btn-danger { background-color: var(--danger-color); }
-        .btn-danger:hover { background-color: #c0392b; }
         .btn-secondary { background-color: var(--secondary-color); color: white; }
         .card { background-color: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 25px; }
         .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
         .stat-card { background-color: var(--card-bg); padding: 25px; border-radius: 8px; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 5px solid; }
-        .stat-card.products { border-color: #3498db; }
-        .stat-card.categories { border-color: #9b59b6; }
-        .stat-card.orders { border-color: #f1c40f; }
-        .stat-card.users { border-color: #2ecc71; }
+        .stat-card.products { border-color: #3498db; } .stat-card.categories { border-color: #9b59b6; } .stat-card.orders { border-color: #f1c40f; } .stat-card.users { border-color: #2ecc71; }
         .stat-card i { font-size: 40px; color: var(--primary-color); opacity: 0.8; }
-        .stat-info h3 { font-size: 32px; font-weight: bold; }
-        .stat-info p { font-size: 16px; color: #777; }
+        .stat-info h3 { font-size: 32px; font-weight: bold; } .stat-info p { font-size: 16px; color: #777; }
         .table-wrapper { overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
@@ -67,15 +56,9 @@
         .data-table img.product-image { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
         .actions-cell button { margin-right: 8px; padding: 6px 10px; }
         .status-select { padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); font-weight: bold; }
-        .status-select.pending { color: var(--warning-color); border-color: var(--warning-color); }
-        .status-select.shipped { color: #3498db; border-color: #3498db; }
-        .status-select.delivered { color: var(--success-color); border-color: var(--success-color); }
-        .status-select.cancelled { color: var(--danger-color); border-color: var(--danger-color); }
-        .category-tree ul { list-style-type: none; padding-left: 25px; }
-        .category-tree li { padding: 12px 8px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .category-tree li:last-child { border-bottom: none; }
-        .category-item-name { font-weight: 500; }
-        .category-item-actions button { font-size: 12px; padding: 5px 8px; }
+        .status-select.pending { color: var(--warning-color); border-color: var(--warning-color); } .status-select.shipped { color: #3498db; border-color: #3498db; } .status-select.delivered { color: var(--success-color); border-color: var(--success-color); } .status-select.cancelled { color: var(--danger-color); border-color: var(--danger-color); }
+        .category-tree ul { list-style-type: none; padding-left: 25px; } .category-tree li { padding: 12px 8px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; } .category-tree li:last-child { border-bottom: none; }
+        .category-item-name { font-weight: 500; } .category-item-actions button { font-size: 12px; padding: 5px 8px; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 1003; display: none; justify-content: center; align-items: center; }
         .modal.visible { display: flex; }
         .modal-content { background-color: var(--card-bg); border-radius: 8px; padding: 25px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
@@ -85,25 +68,153 @@
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 15px; }
-        .form-group input:disabled { background-color: #f0f0f0; cursor: not-allowed; }
-        .form-group textarea { min-height: 150px; resize: vertical; }
+        .form-group textarea { min-height: 120px; resize: vertical; }
         .modal-footer { text-align: right; margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px; }
         .modal-footer .btn { margin-left: 10px; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; display: none; }
         .overlay.visible { display: block; }
+        @media (min-width: 769px) { .sidebar { transform: translateX(0); } .content-wrapper { margin-left: 250px; } .menu-toggle { display: none; } }
+        @media (max-width: 768px) { .sidebar.open { transform: translateX(0); } .main-content { padding: 15px; } .page-header h1 { font-size: 24px; } .dashboard-stats { grid-template-columns: 1fr; } .modal-content { width: 95%; } .page-header .btn { width: 100%; justify-content: center; } }
+    </style>
+</head>
+<body>
+    <div id="login-view">
+        <div class="login-box">
+            <h2>Admin Panel Login</h2>
+            <form id="login-form">
+                <div class="form-group"><input type="email" id="login-email" placeholder="Email" required></div>
+                <div class="form-group"><input type="password" id="login-password" placeholder="Password" required></div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="admin-panel-container" class="hidden">
+        <div class="overlay" id="overlay"></div>
+        <div class="admin-container">
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header"><h2 id="admin-app-name">Admin Panel</h2></div>
+                <ul class="sidebar-nav">
+                    <li><a href="#" class="nav-link active" data-view="dashboard-view"><i class="fas fa-tachometer-alt"></i><span>ড্যাশবোর্ড</span></a></li>
+                    <li><a href="#" class="nav-link" data-view="products-view"><i class="fas fa-box-open"></i><span>পণ্যসমূহ</span></a></li>
+                    <li><a href="#" class="nav-link" data-view="categories-view"><i class="fas fa-tags"></i><span>বিভাগসমূহ</span></a></li>
+                    <li><a href="#" class="nav-link" data-view="orders-view"><i class="fas fa-shopping-cart"></i><span>অর্ডারসমূহ</span></a></li>
+                    <li><a href="#" class="nav-link" data-view="users-view"><i class="fas fa-users"></i><span>ব্যবহারকারী</span></a></li>
+                    <li><a href="#" class="nav-link" data-view="settings-view"><i class="fas fa-cog"></i><span>অ্যাপ সেটিং</span></a></li>
+                </ul>
+                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>লগ আউট</span></button>
+            </nav>
+
+            <div class="content-wrapper" id="content-wrapper">
+                <header class="main-header">
+                    <button class="menu-toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
+                    <h1 class="header-title" id="header-title">ড্যাশবোর্ড</h1>
+                </header>
+
+                <main class="main-content">
+                    <div id="dashboard-view" class="view active"><div class="dashboard-stats">
+                        <div class="stat-card products"><i class="fas fa-box-open"></i><div class="stat-info"><h3 id="total-products-stat">0</h3><p>মোট পণ্য</p></div></div>
+                        <div class="stat-card categories"><i class="fas fa-tags"></i><div class="stat-info"><h3 id="total-categories-stat">0</h3><p>মোট বিভাগ</p></div></div>
+                        <div class="stat-card orders"><i class="fas fa-shopping-cart"></i><div class="stat-info"><h3 id="total-orders-stat">0</h3><p>মোট অর্ডার</p></div></div>
+                        <div class="stat-card users"><i class="fas fa-users"></i><div class="stat-info"><h3 id="total-users-stat">0</h3><p>মোট ব্যবহারকারী</p></div></div>
+                    </div></div>
+                    <div id="products-view" class="view"><div class="page-header"><h1>পণ্য ব্যবস্থাপনা</h1><button class="btn btn-primary" id="add-product-btn"><i class="fas fa-plus"></i> নতুন পণ্য যোগ করুন</button></div><div class="card"><div class="table-wrapper"><table class="data-table" id="products-table"><thead><tr><th>ছবি</th><th>পণ্যের নাম</th><th>মূল্য</th><th>কোড</th><th>কার্যক্রম</th></tr></thead><tbody></tbody></table></div></div></div>
+                    <div id="categories-view" class="view"><div class="page-header"><h1>বিভাগ ব্যবস্থাপনা</h1><button class="btn btn-primary" id="add-category-btn"><i class="fas fa-plus"></i> নতুন বিভাগ যোগ করুন</button></div><div class="card"><div class="category-tree" id="category-tree-container"></div></div></div>
+                    <div id="orders-view" class="view"><div class="card"><div class="table-wrapper"><table class="data-table" id="orders-table"><thead><tr><th>ইনভয়েস নং</th><th>গ্রাহকের নাম</th><th>তারিখ</th><th>মোট টাকা</th><th>স্ট্যাটাস</th></tr></thead><tbody></tbody></table></div></div></div>
+                    <div id="users-view" class="view"><div class="card"><div class="table-wrapper"><table class="data-table" id="users-table"><thead><tr><th>নাম</th><th>ইমেইল</th><th>মোবাইল নম্বর</th><th>ঠিকানা</th></tr></thead><tbody></tbody></table></div></div></div>
+                    <div id="settings-view" class="view">
+                        <form id="settings-form">
+                            <!-- *** START: NEW BANNER/LOGO SECTION *** -->
+                            <div class="card">
+                                <h2>ইউজার অ্যাপের ডিজাইন</h2><br>
+                                <div class="form-group"><label for="app-logo-input">অ্যাপ লোগো URL</label><input type="text" id="app-logo-input" placeholder="আপনার লোগোর লিংক দিন" required></div>
+                                <div class="form-group"><label for="slider-1-input">হোমপেজ ব্যানার/স্লাইডার ১ URL</label><input type="text" id="slider-1-input"></div>
+                                <div class="form-group"><label for="slider-2-input">হোমপেজ ব্যানার/স্লাইডার ২ URL</label><input type="text" id="slider-2-input"></div>
+                                <div class="form-group"><label for="slider-3-input">হোমপেজ ব্যানার/স্লাইডার ৩ URL</label><input type="text" id="slider-3-input"></div>
+                            </div>
+                            <!-- *** END: NEW BANNER/LOGO SECTION *** -->
+
+                            <div class="card">
+                                <h2>সাধারণ সেটিং</h2><br>
+                                <div class="form-group"><label for="app-name-input">অ্যাপের নাম</label><input type="text" id="app-name-input" required></div>
+                                <div class="form-group"><label for="call-number-input">কল বাটন নম্বর</label><input type="text" id="call-number-input" required></div>
+                            </div>
+                            <div class="card">
+                                <h2>ফ্লোটিং আইকন সেটিং</h2><br>
+                                <div class="form-group"><label for="whatsapp-number-input">ফ্লোটিং হোয়াটসঅ্যাপ নম্বর</label><input type="text" id="whatsapp-number-input" required></div>
+                                <div class="form-group"><label for="whatsapp-float-visibility">ফ্লোটিং হোয়াটসঅ্যাপ আইকন</label><select id="whatsapp-float-visibility"><option value="show">দেখান (Show)</option><option value="hide">লুকান (Hide)</option></select></div>
+                                <div class="form-group"><label for="dark-mode-toggle-visibility">ডার্ক মুড টগল আইকন</label><select id="dark-mode-toggle-visibility"><option value="show">দেখান (Show)</option><option value="hide">লুকান (Hide)</option></select></div>
+                            </div>
+                            <div class="card">
+                                <h2>ফুটার "Follow Us" লিঙ্ক</h2><br>
+                                <div class="form-group"><label for="facebook-link-input">ফেসবুক লিঙ্ক</label><input type="text" id="facebook-link-input"></div>
+                                <div class="form-group"><label for="telegram-link-input">টেলিগ্রাম লিঙ্ক</label><input type="text" id="telegram-link-input"></div>
+                                <div class="form-group"><label for="footer-whatsapp-link-input">হোয়াটসঅ্যাপ লিঙ্ক</label><input type="text" id="footer-whatsapp-link-input"></div>
+                                <div class="form-group"><label for="tiktok-link-input">টিকটক লিঙ্ক</label><input type="text" id="tiktok-link-input"></div>
+                                <div class="form-group"><label for="youtube-link-input">ইউটিউব লিঙ্ক</label><input type="text" id="youtube-link-input"></div>
+                                <div class="form-group"><label for="instagram-link-input">ইন্সটাগ্রাম লিঙ্ক</label><input type="text" id="instagram-link-input"></div>
+                            </div>
+                            <div class="card">
+                                <h2>ফুটার "Information" লেখা</h2><br>
+                                <div class="form-group"><label for="about-us-content">About Us</label><textarea id="about-us-content"></textarea></div>
+                                <div class="form-group"><label for="privacy-policy-content">Privacy Policy</label><textarea id="privacy-policy-content"></textarea></div>
+                                <div class="form-group"><label for="terms-conditions-content">Terms & Conditions</label><textarea id="terms-conditions-content"></textarea></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px;">সকল পরিবর্তন সংরক্ষণ করুন</button>
+                        </form>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="form-modal"><div class="modal-content"><div class="modal-header"><h2 id="modal-title"></h2><button class="modal-close-btn">&times;</button></div><div class="modal-body" id="modal-body"></div></div></div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
-        @media (min-width: 769px) {
-            .sidebar { transform: translateX(0); }
-            .content-wrapper { margin-left: 250px; }
-            .menu-toggle { display: none; }
-        }
-        @media (max-width: 768px) {
-            .sidebar.open { transform: translateX(0); }
-            .main-content { padding: 15px; }
-            .page-header h1 { font-size: 24px; }
-            .dashboard-stats { grid-template-columns: 1fr; }
-            .modal-content { width: 95%; }
-            .page-header .btn { width: 100%; justify-content: center; }
+        const firebaseConfig = {
+  apiKey: "AIzaSyCVGdjVpCeIMmB0-MilsdcgLMw7UrCh6DM",
+  authDomain: "arafat-collection-f7d3a.firebaseapp.com",
+  projectId: "arafat-collection-f7d3a",
+  storageBucket: "arafat-collection-f7d3a.firebasestorage.app",
+  messagingSenderId: "535605519996",
+  appId: "1:535605519996:web:b2c9cd1f00bb0453e0cbf9",
+  measurementId: "G-J6NRGZFLYD"
+};
+        
+        const adminApp = initializeApp(firebaseConfigAdmin, "adminApp");
+        const auth = getAuth(adminApp);
+        const db = getFirestore(adminApp);
+        
+        const loginView = document.getElementById('login-view');
+        const adminPanelContainer = document.getElementById('admin-panel-container');
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                loginView.classList.add('hidden');
+                adminPanelContainer.classList.remove('hidden');
+                initializeAdminPanel();
+            } else {
+                loginView.classList.remove('hidden');
+                adminPanelContainer.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+            } catch (error) { alert(`Login Failed: ${error.message}`); }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', async () => await signOut(auth));
+
+        function initializeAdminPanel() {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = d            .page-header .btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
